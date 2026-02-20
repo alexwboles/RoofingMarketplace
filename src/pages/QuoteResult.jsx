@@ -316,7 +316,7 @@ Calculate:
             name: s.name,
             area_sqft: s.area_sqft,
             color: i % 6,
-            points: generateRoofPolygon(i, savedSections.length, total > 0 ? s.area_sqft / total : 1, quoteData.roof_analysis?.complexity),
+            points: generateRoofPolygon(i, savedSections.length, total > 0 ? s.area_sqft / total : 1, quoteData.roof_analysis?.complexity, s.name),
           })));
         }
         setIsAnalyzing(false);
@@ -349,7 +349,7 @@ Calculate:
         name: s.name,
         area_sqft: s.area_sqft,
         color: i % 6,
-        points: generateRoofPolygon(i, analysis.roof_sections.length, secTotal > 0 ? s.area_sqft / secTotal : 1, analysis.complexity),
+        points: generateRoofPolygon(i, analysis.roof_sections.length, secTotal > 0 ? s.area_sqft / secTotal : 1, analysis.complexity, s.name),
       }));
       setRoofSections(initialSections);
 
