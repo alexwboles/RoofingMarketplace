@@ -110,7 +110,7 @@ export default function QuoteResult() {
 
     const analysis = await base44.integrations.Core.InvokeLLM({
       add_context_from_internet: true,
-      prompt: `You are a professional roofing estimator with 20+ years of field experience and access to satellite imagery data. Analyze this specific property and produce a highly accurate roof measurement report.
+      prompt: `You are a professional roofing estimator with 20+ years of field experience and access to satellite imagery data. Analyze this specific property and produce a highly accurate roof measurement and difficulty report.
 
 Property Address: "${quoteData.address}"
 ${detailsContext ? `\nHomeowner-provided details:\n${detailsContext}` : ""}
@@ -122,49 +122,54 @@ Use your internet access to look up:
 - Local climate and weather patterns that affect roofing material choices
 - Street view / satellite knowledge of the roof style
 
-STEP 2 — CALCULATE ROOF AREA ACCURATELY:
-Formula: roof_area = footprint × pitch_multiplier × 1.10 (10% for overhangs and waste)
-Pitch multipliers:
+STEP 2 — CALCULATE ROOF AREA WITH PITCH & OVERHANG:
+Pitch multipliers (slope / run):
   2/12 = 1.028 | 3/12 = 1.054 | 4/12 = 1.054 | 5/12 = 1.083
   6/12 = 1.118 | 7/12 = 1.158 | 8/12 = 1.202 | 10/12 = 1.302 | 12/12 = 1.414
+
+Overhang allowance: typical residential overhang is 12–24 inches. Add 1.5–2.5% to footprint per overhang foot.
+Formula: roof_area = (footprint + overhang_area) × pitch_multiplier × waste_factor
+Waste factor: simple=1.08, moderate=1.12, complex=1.15
 
 ${extraDetails.home_sqft
   ? `The homeowner says their living area is ${extraDetails.home_sqft} sq ft. 
      Footprint ≈ living area (for single story) or living area / stories (for multi-story).
-     COMPUTE: footprint × pitch_multiplier × 1.10 = total_area_sqft.
-     Show your work in your reasoning before returning the number.`
+     COMPUTE step by step: footprint → add overhang → × pitch_multiplier → × waste_factor = total_area_sqft.`
   : `Estimate the home footprint from public records or typical housing for this zip code. NEVER guess below 1,000 sq ft for a single-family home.`}
 
-STEP 3 — IDENTIFY CURRENT ROOF MATERIAL:
-Look up satellite/street view data for this address. Common indicators:
-- Dark 3-tab or architectural shingles (most US homes pre-2010)
-- Standing seam metal (newer construction, NW US, Appalachian regions)  
-- Clay/concrete tile (Southwest US, Florida, California)
-- Slate (Northeast US, older homes pre-1950)
+STEP 3 — IDENTIFY CURRENT ROOF MATERIAL from satellite/public data.
 
-STEP 4 — GENERATE ACCURATE MEASUREMENTS:
-All linear measurements must be geometrically consistent with total_area_sqft.
-- ridge_length ≈ longest horizontal span of roof
-- eave_length ≈ perimeter of roof at base  
-- valleys only present if complexity is moderate/complex
+STEP 4 — DIFFICULTY ASSESSMENT:
+Assign a difficulty_score from 1–10 and list specific difficulty_factors:
+- Steep pitch (>8/12) adds 20–30% labor
+- High stories (2+) adds 15% labor
+- Many valleys/penetrations add complexity
+- Poor access or obstacles (trees, tight lot) increase risk
+- Existing deck damage or multiple layers to tear off
+- Return: difficulty_score (1=trivial, 10=extreme), difficulty_factors (array of strings), pitch_multiplier (the numeric value used), overhang_inches (estimated overhang depth), waste_factor (value used)
 
-Return:
-- total_area_sqft (MUST match your Step 2 calculation exactly)
-- pitch (e.g. "6/12")
-- num_facets (2 for simple gable, 4+ for hip/complex)
-- num_peaks, num_valleys, num_hips
+STEP 5 — GENERATE ACCURATE MEASUREMENTS consistent with total_area_sqft.
+
+Return all fields including:
+- total_area_sqft, pitch, pitch_multiplier, overhang_inches, waste_factor
+- difficulty_score (1-10), difficulty_factors (string array)
+- num_facets, num_peaks, num_valleys, num_hips
 - ridge_length_ft, eave_length_ft, rake_length_ft, valley_length_ft
-- obstacles: [{type, count}] — always include HVAC vents (1-3), plumbing vents (2-4); add chimney if Northeast/Midwest pre-1980
-- complexity: "simple" (gable), "moderate" (hip/L-shape), or "complex" (multiple dormers/valleys)
-- stories: 1 or 2
-- current_material + current_material_label
-- roof_sections: [{name, area_sqft, pitch}] — sections MUST sum exactly to total_area_sqft
-- ai_suggestions: 2-3 highly specific upgrade tips for this exact property/climate`,
+- obstacles: [{type, count}]
+- complexity: "simple" | "moderate" | "complex"
+- stories, current_material, current_material_label
+- roof_sections: [{name, area_sqft, pitch}] — must sum to total_area_sqft
+- ai_suggestions: 2-3 specific tips for this property/climate`,
       response_json_schema: {
         type: "object",
         properties: {
           total_area_sqft: { type: "number" },
           pitch: { type: "string" },
+          pitch_multiplier: { type: "number" },
+          overhang_inches: { type: "number" },
+          waste_factor: { type: "number" },
+          difficulty_score: { type: "number" },
+          difficulty_factors: { type: "array", items: { type: "string" } },
           num_facets: { type: "number" },
           num_peaks: { type: "number" },
           num_valleys: { type: "number" },
