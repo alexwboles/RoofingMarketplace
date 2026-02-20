@@ -58,33 +58,51 @@ export default function QuoteResult() {
   const quoteId = urlParams.get("id");
   const navigate = useNavigate();
 
-  const analyzeRoof = useCallback(async (quoteData) => {
-    // Use AI to generate realistic roof analysis based on the address
+  const analyzeRoof = useCallback(async (quoteData, extraDetails = {}) => {
+    const detailsContext = [
+      extraDetails.home_sqft ? `Living area square footage: ${extraDetails.home_sqft} sq ft` : "",
+      extraDetails.roof_age ? `Roof age: ${extraDetails.roof_age.replace(/_/g, " ")}` : "",
+      extraDetails.concerns ? `Known issues/concerns: ${extraDetails.concerns}` : "",
+      extraDetails.upgrades ? `Desired upgrades/add-ons: ${extraDetails.upgrades}` : "",
+    ].filter(Boolean).join("\n");
+
     const analysis = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a roofing estimation AI. Given this residential address: "${quoteData.address}", generate a realistic and detailed roof analysis as if you analyzed satellite imagery.
+      prompt: `You are a professional roofing estimation AI with expertise in satellite-based roof measurement. 
       
-      Consider the actual region/climate/housing stock for this address. Use Google Street View and satellite data knowledge to estimate:
-      - Number of stories: look at the address region — e.g. northeast US homes often have 2 stories, southwest ranch-style are 1 story
-      - Obstacles: use real knowledge — chimneys are common in cold climates, skylights in newer homes, HVAC vents are almost universal
-      - Complexity: bungalows = simple, hip roofs with dormers = complex
-      
-      Generate realistic measurements. Be specific — avoid round numbers.
-      
-      The analysis should include:
-      - total_area_sqft (typical residential: 1200-3500 sq ft)
-      - pitch (e.g. "4/12", "6/12", "8/12") 
-      - num_facets (number of roof planes, typically 2-8)
-      - num_peaks (typically 1-4)
-      - num_valleys (typically 0-4)
-      - num_hips (typically 0-6)
-      - ridge_length_ft (total ridge length)
-      - eave_length_ft (total eave/drip edge length)
-      - rake_length_ft (total rake length)
-      - valley_length_ft (total valley length)
-      - obstacles: array of {type, count} - include realistic items: HVAC vents (almost always present), plumbing vents, chimney if cold climate, skylights if newer home
-      - complexity: "simple", "moderate", or "complex"
-      - stories: 1 or 2 (based on region/address type)
-      - roof_sections: array of {name, area_sqft, pitch} breaking down the total area into individual roof planes (e.g. "Main Section", "Garage", "Dormer", "Rear Addition")`,
+Address: "${quoteData.address}"
+${detailsContext ? `\nHomeowner-provided details:\n${detailsContext}` : ""}
+
+CRITICAL ACCURACY RULES for roof area estimation:
+- Roof area is ALWAYS larger than living area due to pitch multiplier and overhangs
+- A 1,200 sq ft living area home typically has 1,400–1,800 sq ft of roof area (depending on pitch)
+- A 2,000 sq ft living area home typically has 2,200–2,800 sq ft of roof area
+- Pitch multiplier: 4/12 = 1.054×, 6/12 = 1.118×, 8/12 = 1.202×, 12/12 = 1.414×
+- ${extraDetails.home_sqft ? `The homeowner states the living area is ${extraDetails.home_sqft} sq ft — use this to calculate accurate roof area with pitch multiplier + 10% for overhangs` : "Estimate based on typical housing for this region"}
+- NEVER return a total_area_sqft below 1,000 for a single-family home
+
+Also detect the CURRENT roof material type from satellite/street view knowledge of this address/region/era.
+
+Consider the actual region/climate/housing stock:
+- Northeast US: often 2 stories, 6/12–8/12 pitch, asphalt shingles, chimney common
+- Southwest: ranch style 1 story, low pitch, tile common, no chimney
+- Southeast/Gulf: hip roofs common, 4/12–6/12 pitch, wind-resistant shingles
+- Pacific Northwest: steep pitch, moss-resistant shingles
+- Midwest: gable roofs, 6/12 pitch, architectural shingles
+
+Generate realistic measurements for the roof sections — each section_sqft must sum to approximately total_area_sqft.
+
+Return:
+- total_area_sqft (calculated correctly using pitch multiplier, NEVER less than 1000)
+- pitch (e.g. "4/12", "6/12", "8/12")
+- num_facets, num_peaks, num_valleys, num_hips
+- ridge_length_ft, eave_length_ft, rake_length_ft, valley_length_ft
+- obstacles: [{type, count}] — HVAC vents always present, plumbing vents, chimney if cold climate
+- complexity: "simple", "moderate", or "complex"
+- stories: 1 or 2
+- current_material: detected current roof material (e.g. "asphalt_shingle", "metal", "tile_clay", "tile_concrete", "slate", "wood_shake")
+- current_material_label: human-readable label (e.g. "Asphalt Shingle", "Metal Roof", "Clay Tile")
+- roof_sections: array of {name, area_sqft, pitch} — sections must sum to total_area_sqft
+- ai_suggestions: array of 2–3 upgrade suggestions tailored to this property/location (e.g. "Given your climate, consider impact-resistant shingles for hail protection")`,
       response_json_schema: {
         type: "object",
         properties: {
