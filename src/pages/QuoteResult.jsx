@@ -52,6 +52,7 @@ export default function QuoteResult() {
   const [isComplete, setIsComplete] = useState(false);
   const [roofSections, setRoofSections] = useState([]);
   const [paymentType, setPaymentType] = useState("personal");
+  const [propertyDetails, setPropertyDetails] = useState({});
 
   const urlParams = new URLSearchParams(window.location.search);
   const quoteId = urlParams.get("id");
