@@ -18,6 +18,10 @@ import { createPageUrl } from "@/utils";
 import DynamicPricingEngine from "@/components/roofer/DynamicPricingEngine";
 import AppointmentManager from "@/components/appointments/AppointmentManager";
 import ServiceAreaEditor from "@/components/roofer/ServiceAreaEditor";
+import ConversionRateChart from "@/components/analytics/ConversionRateChart";
+import ProfitabilityChart from "@/components/analytics/ProfitabilityChart";
+import ReviewAnalytics from "@/components/analytics/ReviewAnalytics";
+import ResponseTimeAnalytics from "@/components/analytics/ResponseTimeAnalytics";
 
 function LeadCard({ lead, onStatusChange, onBidUpdate }) {
   const [showPricing, setShowPricing] = useState(false);
