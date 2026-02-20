@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Hammer, LayoutDashboard } from "lucide-react";
+import { Home, Hammer, LayoutDashboard, FolderOpen } from "lucide-react";
 
 export default function Layout({ children, currentPageName }) {
   // Hide layout chrome on full-bleed pages
