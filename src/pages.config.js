@@ -51,6 +51,7 @@ import Home from './pages/Home';
 import QuoteResult from './pages/QuoteResult';
 import RooferSignup from './pages/RooferSignup';
 import RooferDashboard from './pages/RooferDashboard';
+import ProjectView from './pages/ProjectView';
 import __Layout from './Layout.jsx';
 
 
@@ -59,6 +60,7 @@ export const PAGES = {
     "QuoteResult": QuoteResult,
     "RooferSignup": RooferSignup,
     "RooferDashboard": RooferDashboard,
+    "ProjectView": ProjectView,
 }
 
 export const pagesConfig = {
