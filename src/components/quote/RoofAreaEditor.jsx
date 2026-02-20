@@ -186,17 +186,17 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
           className="absolute inset-0 w-full h-full"
           style={{ cursor: dragging ? "grabbing" : "default" }}
         >
-          {localSections.map((sec, si) => {
+          {editing && localSections.map((sec, si) => {
             const color = COLORS[sec.color ?? si % COLORS.length];
             const pts = sec.points || [];
             if (pts.length < 3) return null;
-            const isSelected = editing && activeSec === si;
+            const isSelected = activeSec === si;
             const pointsStr = pts.map((p) => `${p.x},${p.y}`).join(" ");
             const cx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
             const cy = pts.reduce((s, p) => s + p.y, 0) / pts.length;
 
             return (
-              <g key={si} onClick={() => { if (editing) setActiveSec(si); }} style={{ cursor: editing ? "pointer" : "default" }}>
+              <g key={si} onClick={() => setActiveSec(si)} style={{ cursor: "pointer" }}>
                 <polygon
                   points={pointsStr}
                   fill={color.fill}
@@ -205,7 +205,7 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
                   strokeDasharray={isSelected ? "none" : "6 3"}
                   style={{ filter: isSelected ? `drop-shadow(0 0 4px ${color.stroke})` : "none" }}
                 />
-                {editing && pts.map((p, pi) => (
+                {pts.map((p, pi) => (
                   <circle
                     key={pi}
                     cx={p.x} cy={p.y}
