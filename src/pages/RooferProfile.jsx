@@ -76,8 +76,11 @@ export default function RooferProfile() {
     );
   }
 
-  const stars = roofer.rating || 4.5;
-  const reviews = roofer.total_reviews || 0;
+  const avgRating = reviews.length
+    ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length)
+    : (roofer.rating || 4.5);
+  const stars = avgRating;
+  const reviewCount = reviews.length || roofer.total_reviews || 0;
   const wonLeads = leads.filter((l) => l.status === "won" || l.status === "accepted").length;
 
   return (
