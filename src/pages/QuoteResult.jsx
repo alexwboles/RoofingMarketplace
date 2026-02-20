@@ -217,21 +217,30 @@ Return all fields including:
 
 Roof Analysis:
 - Total Area: ${analysis.total_area_sqft} sq ft
-- Pitch: ${analysis.pitch}
-- Facets: ${analysis.num_facets}
+- Pitch: ${analysis.pitch} (multiplier: ${analysis.pitch_multiplier || "estimated"})
+- Overhang: ${analysis.overhang_inches || 12} inches
+- Waste Factor: ${analysis.waste_factor || 1.10}
+- Difficulty Score: ${analysis.difficulty_score || 5}/10
+- Difficulty Factors: ${(analysis.difficulty_factors || []).join("; ") || "standard"}
+- Facets: ${analysis.num_facets}, Complexity: ${analysis.complexity}
 - Peaks: ${analysis.num_peaks}, Valleys: ${analysis.num_valleys}, Hips: ${analysis.num_hips}
 - Ridge: ${analysis.ridge_length_ft} ft, Eave: ${analysis.eave_length_ft} ft
 - Rake: ${analysis.rake_length_ft} ft, Valley: ${analysis.valley_length_ft} ft
 - Obstacles: ${JSON.stringify(analysis.obstacles)}
-- Complexity: ${analysis.complexity}
 - Stories: ${analysis.stories}
 
-Generate a realistic materials list with current 2026 pricing. Include all necessary items: shingles/roofing material, underlayment, ice & water shield, drip edge, ridge cap, flashing, pipe boots, nails, starter strip, hip & ridge shingles, ventilation, etc. Adjust quantities based on waste factor (typically 10-15%).
+DIFFICULTY-ADJUSTED LABOR:
+Base labor rate for this material = standard $/sq ft.
+Apply difficulty multiplier: difficulty_score 1-4 = 1.0×, 5-6 = 1.15×, 7-8 = 1.30×, 9-10 = 1.50×.
+Steep pitch surcharge (>8/12): add 25% to labor.
+Multi-story surcharge: add 15% to labor per story above 1.
+
+Generate a realistic materials list with current 2026 pricing. Include all necessary items: shingles/roofing material, underlayment, ice & water shield, drip edge, ridge cap, flashing, pipe boots, nails, starter strip, hip & ridge shingles, ventilation, etc.
 
 Calculate:
 - materials_cost (total material cost)
-- labor_cost (estimated labor)
-- estimated_total (midpoint estimate)
+- labor_cost (difficulty-adjusted labor)
+- estimated_total (materials + labor)
 - price_range_low (estimated_total minus ~8%)
 - price_range_high (estimated_total plus ~15%, accounting for contractor markup and contingencies)`,
       response_json_schema: {
