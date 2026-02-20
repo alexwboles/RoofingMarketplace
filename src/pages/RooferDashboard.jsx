@@ -74,7 +74,9 @@ export default function RooferDashboard() {
     { label: "Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-violet-600 bg-violet-50" },
   ];
 
-  const LeadCard = ({ lead }) => (
+  const LeadCard = ({ lead }) => {
+    const [showPricing, setShowPricing] = useState(false);
+    return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="pt-5">
         <div className="flex items-start justify-between mb-3">
