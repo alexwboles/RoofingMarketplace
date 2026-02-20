@@ -28,7 +28,16 @@ export default function AddressInput({ onSubmit, isLoading }) {
         `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(val)}&countrycodes=us`
       );
       const data = await res.json();
-      setSuggestions(data.map((item) => item.display_name));
+      // Format as: "123 Main St, City, State ZIP"
+      const formatted = data.map((item) => {
+        const a = item.address;
+        const street = [a.house_number, a.road].filter(Boolean).join(" ");
+        const city = a.city || a.town || a.village || a.county || "";
+        const state = a.state || "";
+        const zip = a.postcode || "";
+        return [street, city, state, zip].filter(Boolean).join(", ");
+      }).filter(Boolean);
+      setSuggestions(formatted.length ? formatted : data.map((item) => item.display_name));
       setShowSuggestions(true);
       setFetchingHint(false);
     }, 350);
