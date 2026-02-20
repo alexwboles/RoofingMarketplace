@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import BidSubmission from './pages/BidSubmission';
 import Home from './pages/Home';
 import HomeownerDashboard from './pages/HomeownerDashboard';
 import ProjectView from './pages/ProjectView';
@@ -54,12 +55,12 @@ import QuoteResult from './pages/QuoteResult';
 import RooferDashboard from './pages/RooferDashboard';
 import RooferProfile from './pages/RooferProfile';
 import RooferSignup from './pages/RooferSignup';
-import BidSubmission from './pages/BidSubmission';
 import RoofersList from './pages/RoofersList';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "BidSubmission": BidSubmission,
     "Home": Home,
     "HomeownerDashboard": HomeownerDashboard,
     "ProjectView": ProjectView,
@@ -67,7 +68,6 @@ export const PAGES = {
     "RooferDashboard": RooferDashboard,
     "RooferProfile": RooferProfile,
     "RooferSignup": RooferSignup,
-    "BidSubmission": BidSubmission,
     "RoofersList": RoofersList,
 }
 

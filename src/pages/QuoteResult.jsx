@@ -590,6 +590,8 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
       roofer_phone: proposal.roofer_phone,
       address: quote.address,
       material_type: materialType,
+      roof_analysis: quote.roof_analysis,
+      materials_list: quote.materials_list,
       contract_amount: proposal.roofer_bid,
       amount_paid: 0,
       status: "scheduled",
