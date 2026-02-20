@@ -218,7 +218,7 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
                   />
                 ))}
                 <text
-                  x={cx} y={cy - 4}
+                  x={cx} y={cy}
                   textAnchor="middle"
                   fill="white"
                   fontSize="12"
@@ -229,19 +229,6 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
                   paintOrder="stroke"
                 >
                   {sec.name}
-                </text>
-                <text
-                  x={cx} y={cy + 12}
-                  textAnchor="middle"
-                  fill="white"
-                  fontSize="11"
-                  fontWeight="600"
-                  stroke="rgba(0,0,0,0.8)"
-                  strokeWidth="3"
-                  strokeLinejoin="round"
-                  paintOrder="stroke"
-                >
-                  {sec.area_sqft?.toLocaleString()} ft²
                 </text>
               </g>
             );
@@ -292,19 +279,9 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
 
       {/* View mode — compact summary below map */}
       {!editing && localSections.length > 0 && (
-        <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-800/95 flex-wrap">
-          {localSections.map((sec, i) => {
-            const color = COLORS[sec.color ?? i % COLORS.length];
-            return (
-              <div key={i} className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-sm" style={{ background: color.stroke }} />
-                <span className="text-xs text-slate-300">{sec.name}</span>
-                <span className="text-xs font-bold text-white">{sec.area_sqft?.toLocaleString()} ft²</span>
-              </div>
-            );
-          })}
-          <span className="ml-auto text-xs text-slate-400 font-semibold">Total: {totalSqft.toLocaleString()} ft²</span>
-        </div>
+       <div className="px-4 py-2.5 bg-slate-800/95 text-xs text-slate-300">
+         Total Roof Area: <span className="font-bold text-white">{totalSqft.toLocaleString()} ft²</span>
+       </div>
       )}
     </div>
   );

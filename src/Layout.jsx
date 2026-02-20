@@ -18,7 +18,7 @@ export default function Layout({ children, currentPageName }) {
             <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
               <Home className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-slate-900">RoofQuote<span className="text-amber-500">AI</span></span>
+            <span className="font-bold text-slate-900">Roofing<span className="text-amber-500">Marketplace</span></span>
           </Link>
 
           <div className="flex items-center gap-1">

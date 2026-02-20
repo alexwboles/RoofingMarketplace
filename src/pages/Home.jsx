@@ -47,7 +47,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="py-8 px-4 bg-slate-950 text-center">
-        <p className="text-sm text-slate-500">© 2026 RoofQuote AI. All rights reserved.</p>
+        <p className="text-sm text-slate-500">© 2026 Roofing Marketplace. All rights reserved.</p>
       </footer>
     </div>
   );
