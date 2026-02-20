@@ -498,6 +498,9 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
             </div>
           ) : (
             <div className="space-y-6">
+              {/* Property Details (optional, improves analysis) */}
+              <PropertyDetailsForm value={propertyDetails} onChange={setPropertyDetails} />
+
               {/* Satellite + Roof Area Editor */}
               <RoofAreaEditor
                 address={quote.address}
@@ -505,24 +508,52 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
                 onSectionsChange={handleSectionsChange}
               />
 
-              {/* Price Estimate */}
-              <PriceEstimate
-                materialsCost={quote.materials_cost}
-                laborCost={quote.labor_cost}
-                total={quote.estimated_total}
-                materialType={materialType}
-              />
+              {/* Current Material Detection */}
+              {quote.roof_analysis?.current_material_label && (
+                <div className="bg-white rounded-2xl border border-slate-200 p-4 flex items-center gap-3">
+                  <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center shrink-0">
+                    <span className="text-lg">🏠</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 uppercase tracking-wide">Detected Current Roof Material</p>
+                    <p className="text-sm font-semibold text-slate-800">{quote.roof_analysis.current_material_label}</p>
+                  </div>
+                </div>
+              )}
 
               {/* Material Selector */}
               <div className="bg-white rounded-2xl border border-slate-200 p-6">
                 <MaterialTypeSelector value={materialType} onChange={handleMaterialChange} />
               </div>
 
+              {/* AI Suggestions */}
+              {quote.roof_analysis?.ai_suggestions?.length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2">
+                  <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">AI Recommendations for Your Property</p>
+                  {quote.roof_analysis.ai_suggestions.map((s, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">✦</span>
+                      <p className="text-sm text-amber-900">{s}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Roof Report (editable) */}
               <RoofReport analysis={quote.roof_analysis} onSave={handleAnalysisEdit} />
 
               {/* Materials List */}
               <MaterialsList materials={quote.materials_list} />
+
+              {/* Price Estimate — at bottom of report */}
+              <PriceEstimate
+                materialsCost={quote.materials_cost}
+                laborCost={quote.labor_cost}
+                total={quote.estimated_total}
+                priceRangeLow={quote.price_range_low}
+                priceRangeHigh={quote.price_range_high}
+                materialType={materialType}
+              />
 
               {/* Payment Type */}
               <div className="bg-white rounded-2xl border border-slate-200 p-6">
