@@ -17,10 +17,10 @@ Deno.serve(async (req) => {
       line_items: [{
         price_data: {
           currency: "usd",
-          unit_amount: Math.round(amount * 100), // cents
+          unit_amount: Math.round(amount * 100),
           product_data: {
-            name: description || "Milestone Payment",
-            description: `Project milestone payment`,
+            name: description || "Project Payment",
+            description: milestoneIndex >= 0 ? `Milestone payment` : `Project payment`,
           },
         },
         quantity: 1,
@@ -32,6 +32,7 @@ Deno.serve(async (req) => {
         project_id: projectId,
         milestone_index: String(milestoneIndex),
         amount: String(amount),
+        description: description || "Project Payment",
       },
     });
 
