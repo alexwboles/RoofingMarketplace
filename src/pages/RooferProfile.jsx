@@ -163,7 +163,7 @@ export default function RooferProfile() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { icon: Star, label: "Rating", value: stars.toFixed(1), color: "text-amber-500" },
-            { icon: Users, label: "Reviews", value: reviews.toLocaleString(), color: "text-blue-500" },
+            { icon: Users, label: "Reviews", value: reviewCount.toLocaleString(), color: "text-blue-500" },
             { icon: CheckCircle2, label: "Jobs Won", value: wonLeads, color: "text-emerald-500" },
             { icon: Clock, label: "Member Since", value: roofer.created_date ? new Date(roofer.created_date).getFullYear() : "—", color: "text-violet-500" },
           ].map((s, i) => (
