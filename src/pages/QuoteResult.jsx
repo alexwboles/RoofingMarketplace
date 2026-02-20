@@ -10,8 +10,9 @@ import MaterialTypeSelector from "@/components/quote/MaterialTypeSelector";
 import ContactForm from "@/components/quote/ContactForm";
 import SatelliteImageViewer from "@/components/quote/SatelliteImageViewer";
 import RoofReport from "@/components/quote/RoofReport";
+import RooferProposals from "@/components/quote/RooferProposals";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -20,7 +21,12 @@ export default function QuoteResult() {
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [materialType, setMaterialType] = useState("architectural_shingle");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [contactInfo, setContactInfo] = useState(null);
+  const [proposals, setProposals] = useState([]);
+  const [isMatchingRoofers, setIsMatchingRoofers] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [projectId, setProjectId] = useState(null);
+  const [isComplete, setIsComplete] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
   const quoteId = urlParams.get("id");
