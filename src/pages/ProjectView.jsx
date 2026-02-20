@@ -211,18 +211,67 @@ export default function ProjectView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Card>
                 <CardContent className="pt-5 space-y-2">
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Project Info</p>
-                  {[
-                    { label: "Address", value: project.address },
-                    { label: "Start Date", value: project.start_date || "TBD" },
-                    { label: "Est. Completion", value: project.estimated_completion || "TBD" },
-                    { label: "Material", value: (project.material_type || "").replace(/_/g, " ") },
-                  ].map((r, i) => (
-                    <div key={i} className="flex justify-between text-sm py-1 border-b border-slate-50 last:border-0">
-                      <span className="text-slate-400">{r.label}</span>
-                      <span className="text-slate-800 font-medium">{r.value}</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Project Info</p>
+                    {isRoofer && !isEditingOverview && (
+                      <Button size="sm" variant="ghost" onClick={handleEditOverview} className="h-7 px-2">
+                        <Edit2 className="w-3 h-3 mr-1" /> Edit
+                      </Button>
+                    )}
+                  </div>
+                  {isEditingOverview ? (
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-xs mb-1">Start Date</Label>
+                        <Input
+                          type="date"
+                          value={editData.start_date}
+                          onChange={(e) => setEditData({...editData, start_date: e.target.value})}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs mb-1">Est. Completion</Label>
+                        <Input
+                          type="date"
+                          value={editData.estimated_completion}
+                          onChange={(e) => setEditData({...editData, estimated_completion: e.target.value})}
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs mb-1">Material Type</Label>
+                        <Input
+                          value={editData.material_type}
+                          onChange={(e) => setEditData({...editData, material_type: e.target.value})}
+                          className="text-sm"
+                          placeholder="e.g., architectural_shingle"
+                        />
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" onClick={handleSaveOverview} className="bg-green-600 hover:bg-green-700">
+                          <Check className="w-3 h-3 mr-1" /> Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelEdit}>
+                          <X className="w-3 h-3 mr-1" /> Cancel
+                        </Button>
+                      </div>
                     </div>
-                  ))}
+                  ) : (
+                    <>
+                      {[
+                        { label: "Address", value: project.address },
+                        { label: "Start Date", value: project.start_date || "TBD" },
+                        { label: "Est. Completion", value: project.estimated_completion || "TBD" },
+                        { label: "Material", value: (project.material_type || "").replace(/_/g, " ") },
+                      ].map((r, i) => (
+                        <div key={i} className="flex justify-between text-sm py-1 border-b border-slate-50 last:border-0">
+                          <span className="text-slate-400">{r.label}</span>
+                          <span className="text-slate-800 font-medium">{r.value}</span>
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </CardContent>
               </Card>
               <Card>
