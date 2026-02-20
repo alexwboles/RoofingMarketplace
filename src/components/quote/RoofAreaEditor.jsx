@@ -108,25 +108,22 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
 
   const addSection = () => {
     const idx = localSections.length;
-    const color = COLORS[idx % COLORS.length];
-    const cx = 80 + (idx % 4) * 130;
-    const cy = 80 + Math.floor(idx / 4) * 120;
+    const cx = 80 + (idx % 3) * 160;
+    const cy = 80 + Math.floor(idx / 3) * 120;
     const newSec = {
       name: `Section ${idx + 1}`,
       points: [
         { x: cx, y: cy },
-        { x: cx + 100, y: cy },
-        { x: cx + 100, y: cy + 80 },
-        { x: cx, y: cy + 80 },
+        { x: cx + 120, y: cy },
+        { x: cx + 120, y: cy + 90 },
+        { x: cx, y: cy + 90 },
       ],
-      area_sqft: 0,
+      area_sqft: 800,
       color: idx % COLORS.length,
     };
-    newSec.area_sqft = pxToSqft(polygonArea(newSec.points));
     const updated = [...localSections, newSec];
     setLocalSections(updated);
     setActiveSec(updated.length - 1);
-    setPlacing(true);
   };
 
   const removeSection = (i) => {
