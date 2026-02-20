@@ -195,112 +195,166 @@ Based on all findings, provide: overall_risk: "low", "medium", or "high", and re
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Basic Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm text-slate-600">Company Name</Label>
+                  <Label className="text-sm text-slate-600">Company Name *</Label>
                   <div className="relative mt-1">
                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      value={form.company_name}
-                      onChange={(e) => handleChange("company_name", e.target.value)}
-                      placeholder="ABC Roofing"
-                      className="pl-10"
-                      required
-                    />
+                    <Input value={form.company_name} onChange={(e) => handleChange("company_name", e.target.value)} placeholder="ABC Roofing" className="pl-10" required />
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm text-slate-600">Contact Name</Label>
+                  <Label className="text-sm text-slate-600">Contact Name *</Label>
                   <div className="relative mt-1">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      value={form.contact_name}
-                      onChange={(e) => handleChange("contact_name", e.target.value)}
-                      placeholder="John Smith"
-                      className="pl-10"
-                      required
-                    />
+                    <Input value={form.contact_name} onChange={(e) => handleChange("contact_name", e.target.value)} placeholder="John Smith" className="pl-10" required />
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm text-slate-600">Email</Label>
+                  <Label className="text-sm text-slate-600">Email *</Label>
                   <div className="relative mt-1">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => handleChange("email", e.target.value)}
-                      placeholder="john@abcroofing.com"
-                      className="pl-10"
-                      required
-                    />
+                    <Input type="email" value={form.email} onChange={(e) => handleChange("email", e.target.value)} placeholder="john@abcroofing.com" className="pl-10" required />
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm text-slate-600">Phone</Label>
+                  <Label className="text-sm text-slate-600">Phone *</Label>
                   <div className="relative mt-1">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      type="tel"
-                      value={form.phone}
-                      onChange={(e) => handleChange("phone", e.target.value)}
-                      placeholder="(555) 123-4567"
-                      className="pl-10"
-                      required
-                    />
+                    <Input type="tel" value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} placeholder="(555) 123-4567" className="pl-10" required />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-slate-600">License Number</Label>
+                  <div className="relative mt-1">
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input value={form.license_number} onChange={(e) => handleChange("license_number", e.target.value)} placeholder="ROC-123456" className="pl-10" />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-600">Years in Business</Label>
+                  <div className="relative mt-1">
+                    <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input value={form.years_experience} onChange={(e) => handleChange("years_experience", e.target.value)} placeholder="e.g. 12" className="pl-10" type="number" min={0} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-slate-600">Insurance Carrier</Label>
+                  <div className="relative mt-1">
+                    <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input value={form.insurance_carrier} onChange={(e) => handleChange("insurance_carrier", e.target.value)} placeholder="Travelers, Nationwide…" className="pl-10" />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-600">Approx. Annual Revenue</Label>
+                  <div className="relative mt-1">
+                    <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input value={form.annual_revenue} onChange={(e) => handleChange("annual_revenue", e.target.value)} placeholder="e.g. $500k" className="pl-10" />
                   </div>
                 </div>
               </div>
 
               <div>
-                <Label className="text-sm text-slate-600">License Number</Label>
-                <div className="relative mt-1">
-                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                    value={form.license_number}
-                    onChange={(e) => handleChange("license_number", e.target.value)}
-                    placeholder="ROC-123456"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm text-slate-600">Service Areas</Label>
+                <Label className="text-sm text-slate-600">Service Areas *</Label>
                 <div className="relative mt-1">
                   <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                  <Textarea
-                    value={form.service_areas_text}
-                    onChange={(e) => handleChange("service_areas_text", e.target.value)}
-                    placeholder="Enter zip codes or cities, separated by commas (e.g. 85001, Phoenix, Scottsdale)"
-                    className="pl-10 min-h-[80px]"
-                  />
+                  <Textarea value={form.service_areas_text} onChange={(e) => handleChange("service_areas_text", e.target.value)} placeholder="Zip codes or cities, comma-separated (e.g. 85001, Phoenix, Scottsdale)" className="pl-10 min-h-[70px]" />
                 </div>
               </div>
 
               <div>
                 <Label className="text-sm text-slate-600">Specialties</Label>
-                <Textarea
-                  value={form.specialties_text}
-                  onChange={(e) => handleChange("specialties_text", e.target.value)}
-                  placeholder="e.g. Shingle, Metal, Tile, Flat Roof, Storm Damage"
-                  className="min-h-[60px] mt-1"
-                />
+                <Textarea value={form.specialties_text} onChange={(e) => handleChange("specialties_text", e.target.value)} placeholder="e.g. Shingle, Metal, Tile, Flat Roof, Storm Damage" className="min-h-[60px] mt-1" />
               </div>
+
+              {/* AI Verification Button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={runAIVerification}
+                disabled={isVerifying}
+                className="w-full h-11 border-violet-300 text-violet-700 hover:bg-violet-50"
+              >
+                {isVerifying ? (
+                  <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Verifying credentials & analyzing market rates…</>
+                ) : (
+                  <><Sparkles className="w-4 h-4 mr-2" /> Run AI Credential Check + Pricing Strategy</>
+                )}
+              </Button>
+
+              {/* AI Verification Results */}
+              <AnimatePresence>
+                {verification && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+                    {/* License */}
+                    <div className={`rounded-xl border p-3 flex items-start gap-3 ${verification.license_status === "verified" ? "bg-emerald-50 border-emerald-200" : verification.license_status === "suspicious" ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
+                      {verification.license_status === "verified"
+                        ? <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                        : verification.license_status === "suspicious"
+                        ? <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                        : <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />}
+                      <div>
+                        <p className="text-sm font-semibold">License: <span className="capitalize">{verification.license_status?.replace(/_/g, " ")}</span></p>
+                        {verification.license_notes && <p className="text-xs mt-0.5 text-slate-600">{verification.license_notes}</p>}
+                      </div>
+                    </div>
+
+                    {/* Reputation */}
+                    {verification.reputation_score != null && (
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-sm font-semibold text-slate-700">Reputation Score</p>
+                          <Badge className={`text-xs ${verification.reputation_score >= 7 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : verification.reputation_score >= 4 ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-red-50 text-red-700 border-red-200"} border`}>
+                            {verification.reputation_score}/10
+                          </Badge>
+                        </div>
+                        {verification.reputation_notes && <p className="text-xs text-slate-500">{verification.reputation_notes}</p>}
+                      </div>
+                    )}
+
+                    {/* Pricing Strategy */}
+                    {pricingSuggestion && (
+                      <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <TrendingUp className="w-4 h-4 text-blue-600" />
+                          <p className="text-sm font-semibold text-blue-800">Suggested Pricing Strategy</p>
+                        </div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <p className="text-2xl font-extrabold text-blue-700">${pricingSuggestion.base_rate}<span className="text-sm font-normal">/sq</span></p>
+                          {pricingSuggestion.tier && <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-200 border">{pricingSuggestion.tier}</Badge>}
+                        </div>
+                        {pricingSuggestion.notes && <p className="text-xs text-blue-700">{pricingSuggestion.notes}</p>}
+                      </div>
+                    )}
+
+                    {/* Recommendation */}
+                    <div className={`rounded-xl border p-3 flex items-start gap-3 ${verification.recommendation === "approve" ? "bg-emerald-50 border-emerald-200" : verification.recommendation === "reject" ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
+                      <CheckCircle2 className={`w-5 h-5 shrink-0 mt-0.5 ${verification.recommendation === "approve" ? "text-emerald-600" : verification.recommendation === "reject" ? "text-red-500" : "text-amber-500"}`} />
+                      <div>
+                        <p className="text-sm font-semibold capitalize">AI Recommendation: {verification.recommendation}</p>
+                        {verification.recommendation_reason && <p className="text-xs mt-0.5 text-slate-600">{verification.recommendation_reason}</p>}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <Button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-semibold rounded-xl shadow-lg shadow-amber-500/20"
               >
-                {isSubmitting ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  "Submit Application"
-                )}
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Application"}
               </Button>
             </form>
           </CardContent>
