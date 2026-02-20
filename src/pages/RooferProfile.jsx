@@ -126,7 +126,7 @@ export default function RooferProfile() {
                     className={`w-4 h-4 ${n <= Math.round(stars) ? "text-amber-400 fill-amber-400" : "text-slate-600"}`}
                   />
                 ))}
-                <span className="text-sm text-slate-300 ml-1">{stars.toFixed(1)} ({reviews} reviews)</span>
+                <span className="text-sm text-slate-300 ml-1">{stars.toFixed(1)} ({reviewCount} reviews)</span>
               </div>
 
               {roofer.service_areas?.length > 0 && (
