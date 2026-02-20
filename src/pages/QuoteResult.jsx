@@ -271,11 +271,12 @@ Calculate:
         // Restore sections from saved analysis
         const savedSections = quoteData.roof_analysis?.roof_sections;
         if (savedSections?.length) {
+          const total = savedSections.reduce((s, x) => s + (x.area_sqft || 0), 0);
           setRoofSections(savedSections.map((s, i) => ({
             name: s.name,
             area_sqft: s.area_sqft,
             color: i % 6,
-            points: generateDefaultPolygon(i, savedSections.length),
+            points: generateRoofPolygon(i, savedSections.length, total > 0 ? s.area_sqft / total : 1, quoteData.roof_analysis?.complexity),
           })));
         }
         setIsAnalyzing(false);
