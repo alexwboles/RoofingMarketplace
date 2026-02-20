@@ -247,6 +247,15 @@ export default function RooferProfile() {
           </Card>
         )}
 
+        {/* Reviews section */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <MessageSquare className="w-4 h-4 text-slate-500" />
+            <h2 className="text-base font-semibold text-slate-800">Customer Reviews</h2>
+          </div>
+          <RooferReviews reviews={reviews} />
+        </div>
+
         {/* Get a Quote CTA */}
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 text-center text-white">
           <h3 className="text-lg font-bold mb-1">Ready to get started?</h3>
