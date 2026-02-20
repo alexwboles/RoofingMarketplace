@@ -297,6 +297,19 @@ export default function RoofReport({ analysis, onSave, aiSuggestions }) {
             </div>
           </div>
         )}
+
+        {/* AI Recommendations — shown at bottom of report */}
+        {!editing && aiSuggestions?.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
+            <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">AI Recommendations for Your Property</p>
+            {aiSuggestions.map((s, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className="text-amber-500 mt-0.5 shrink-0">✦</span>
+                <p className="text-sm text-amber-900">{s}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
