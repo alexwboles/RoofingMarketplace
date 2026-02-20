@@ -36,6 +36,8 @@ export default function ProjectView() {
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isEditingOverview, setIsEditingOverview] = useState(false);
+  const [editData, setEditData] = useState({});
   const navigate = useNavigate();
 
   // Handle Stripe payment success redirect
