@@ -15,6 +15,7 @@ export default function PaymentPanel({ project, onPaymentComplete, isRoofer }) {
   const [showCustom, setShowCustom] = useState(false);
   const [loadingIdx, setLoadingIdx] = useState(null);
   const [loadingCustom, setLoadingCustom] = useState(false);
+  const [paymentType, setPaymentType] = useState(project?.payment_type || "personal");
 
   const totalPaid = project?.amount_paid || 0;
   const contractAmount = project?.contract_amount || 0;
