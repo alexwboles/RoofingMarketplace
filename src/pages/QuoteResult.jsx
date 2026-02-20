@@ -12,6 +12,7 @@ import RoofAreaEditor from "@/components/quote/RoofAreaEditor";
 import RoofReport from "@/components/quote/RoofReport";
 import RooferProposals from "@/components/quote/RooferProposals";
 import PaymentTypeSelector from "@/components/quote/PaymentTypeSelector";
+import PropertyDetailsForm from "@/components/quote/PropertyDetailsForm";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
