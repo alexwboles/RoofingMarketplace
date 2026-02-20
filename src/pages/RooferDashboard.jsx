@@ -142,9 +142,30 @@ export default function RooferDashboard() {
         <p className="text-[10px] text-slate-400 mt-3">
           {lead.created_date && format(new Date(lead.created_date), "MMM d, yyyy 'at' h:mm a")}
         </p>
+
+        {/* Dynamic Pricing Engine toggle */}
+        <button
+          onClick={() => setShowPricing(v => !v)}
+          className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs text-violet-600 hover:text-violet-800 bg-violet-50 hover:bg-violet-100 rounded-lg py-1.5 transition-colors"
+        >
+          <TrendingUp className="w-3.5 h-3.5" />
+          Pricing Engine
+          {showPricing ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        </button>
+
+        {showPricing && (
+          <div className="mt-3">
+            <DynamicPricingEngine
+              lead={lead}
+              roofer={null}
+              onBidUpdate={(bid) => queryClient.invalidateQueries({ queryKey: ["leads"] })}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
+  };
 
   const ProjectCard = ({ project }) => (
     <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl("ProjectView") + `?id=${project.id}&role=roofer`)}>
