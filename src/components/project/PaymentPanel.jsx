@@ -90,6 +90,40 @@ export default function PaymentPanel({ project, onPaymentComplete, isRoofer }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
+        {/* How are you paying */}
+        {!isRoofer && (
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Payment Method</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: "personal", icon: Wallet, label: "Out of Pocket", iconColor: "text-emerald-600", active: "border-emerald-500 bg-emerald-50" },
+                { value: "insurance", icon: Shield, label: "Insurance Claim", iconColor: "text-blue-600", active: "border-blue-500 bg-blue-50" },
+              ].map((opt) => {
+                const Icon = opt.icon;
+                const isActive = paymentType === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => setPaymentType(opt.value)}
+                    className={cn(
+                      "flex items-center gap-2 p-3 rounded-xl border-2 text-left transition-all text-sm font-medium",
+                      isActive ? opt.active : "border-slate-200 bg-slate-50 hover:border-slate-300"
+                    )}
+                  >
+                    <Icon className={cn("w-4 h-4 shrink-0", opt.iconColor)} />
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+            {paymentType === "insurance" && (
+              <div className="mt-2 bg-blue-50 border border-blue-100 rounded-xl p-2.5 text-xs text-blue-700">
+                Your estimate can be submitted to your adjuster. Roofers in our network work with insurance claims.
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Progress bar */}
         <div>
           <div className="flex justify-between text-xs text-slate-500 mb-1.5">
