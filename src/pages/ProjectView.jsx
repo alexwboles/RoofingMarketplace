@@ -171,11 +171,12 @@ export default function ProjectView() {
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <Tabs defaultValue="overview">
-          <TabsList className="bg-white border mb-6">
+          <TabsList className="bg-white border mb-6 flex-wrap h-auto gap-1 py-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="milestones">Milestones</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
+            {!isRoofer && <TabsTrigger value="materials">🏠 Materials</TabsTrigger>}
             {!isRoofer && (project.status === "completed" || project.status === "warranty") && (
               <TabsTrigger value="review">⭐ Review</TabsTrigger>
             )}
