@@ -478,8 +478,13 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
               {/* Materials List */}
               <MaterialsList materials={quote.materials_list} />
 
+              {/* Payment Type */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-6">
+                <PaymentTypeSelector value={paymentType} onChange={setPaymentType} />
+              </div>
+
               {/* Contact Form */}
-              <ContactForm onSubmit={handleContactSubmit} isLoading={isSubmitting} />
+              <ContactForm onSubmit={(info) => handleContactSubmit({ ...info, payment_type: paymentType })} isLoading={isSubmitting} />
             </div>
           )}
         </div>
