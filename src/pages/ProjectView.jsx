@@ -103,6 +103,25 @@ export default function ProjectView() {
     }
   };
 
+  const handleEditOverview = () => {
+    setEditData({
+      start_date: project.start_date || "",
+      estimated_completion: project.estimated_completion || "",
+      material_type: project.material_type || "",
+    });
+    setIsEditingOverview(true);
+  };
+
+  const handleSaveOverview = async () => {
+    await save(editData);
+    setIsEditingOverview(false);
+    toast.success("Project details updated!");
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingOverview(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
