@@ -30,15 +30,24 @@ function LeadCard({ lead, onStatusChange, onBidUpdate }) {
   return (
     <Card className="hover:shadow-md transition-shadow overflow-hidden">
       {/* Satellite thumbnail */}
-      <div className="relative h-32 bg-slate-900 overflow-hidden">
-        <iframe
-          title="Satellite"
-          src={satelliteUrl}
-          width="100%"
-          height="256"
-          style={{ border: 0, pointerEvents: "none", marginTop: "-62px" }}
-          loading="lazy"
-        />
+      <div className="relative h-40 bg-slate-900 overflow-hidden">
+        {lead.satellite_image_url ? (
+          <img
+            src={lead.satellite_image_url}
+            alt="Satellite view"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <iframe
+            title="Satellite Map"
+            src={satelliteUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 0, pointerEvents: "none" }}
+            loading="lazy"
+            className="absolute inset-0"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/60" />
         <Badge className={`absolute top-2 right-2 ${leadStatusColors[lead.status]} border text-xs`}>
           {lead.status?.replace("_", " ")}
