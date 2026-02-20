@@ -20,18 +20,89 @@ export default function RooferSignup() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verification, setVerification] = useState(null); // AI verification result
+  const [pricingSuggestion, setPricingSuggestion] = useState(null);
   const [form, setForm] = useState({
     company_name: "",
     contact_name: "",
     email: "",
     phone: "",
     license_number: "",
+    years_experience: "",
     service_areas_text: "",
     specialties_text: "",
+    annual_revenue: "",
+    insurance_carrier: "",
   });
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const runAIVerification = async () => {
+    if (!form.company_name || !form.license_number || !form.service_areas_text) {
+      toast.error("Please fill in company name, license number, and service areas first.");
+      return;
+    }
+    setIsVerifying(true);
+    setVerification(null);
+    setPricingSuggestion(null);
+
+    const result = await base44.integrations.Core.InvokeLLM({
+      add_context_from_internet: true,
+      prompt: `You are a contractor verification and pricing strategy AI for a roofing marketplace.
+
+Verify and assess this roofing contractor application:
+- Company: "${form.company_name}"
+- License #: "${form.license_number}"
+- Contact: "${form.contact_name}"
+- Phone: "${form.phone}"
+- Service Areas: "${form.service_areas_text}"
+- Specialties: "${form.specialties_text}"
+- Years Experience: "${form.years_experience || "not provided"}"
+- Insurance Carrier: "${form.insurance_carrier || "not provided"}"
+- Annual Revenue: "${form.annual_revenue || "not provided"}"
+
+STEP 1 — LICENSE VERIFICATION:
+Search for this contractor license number "${form.license_number}" in any US state contractor licensing databases. Check if the license appears valid for the service area provided. Return license_status: "verified", "likely_valid", "not_found", or "suspicious".
+
+STEP 2 — COMPANY REPUTATION:
+Search for "${form.company_name}" in the service area "${form.service_areas_text}". Look for BBB ratings, Google reviews, news mentions, complaints. Return reputation_score (1-10) and any notable findings.
+
+STEP 3 — MARKET RATE ANALYSIS:
+Research current labor rates for roofing contractors in "${form.service_areas_text}". Suggest a competitive pricing strategy based on:
+- Local market rates
+- Competition level in that area
+- Contractor's stated experience level
+Return: suggested_base_rate_per_sq ($/sq = 100 sq ft), pricing_tier, market_notes.
+
+STEP 4 — RISK ASSESSMENT:
+Based on all findings, provide: overall_risk: "low", "medium", or "high", and recommendation: "approve", "review", or "reject".`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          license_status: { type: "string" },
+          license_notes: { type: "string" },
+          reputation_score: { type: "number" },
+          reputation_notes: { type: "string" },
+          suggested_base_rate_per_sq: { type: "number" },
+          pricing_tier: { type: "string" },
+          market_notes: { type: "string" },
+          overall_risk: { type: "string" },
+          recommendation: { type: "string" },
+          recommendation_reason: { type: "string" }
+        }
+      }
+    });
+
+    setVerification(result);
+    setPricingSuggestion({
+      base_rate: result.suggested_base_rate_per_sq,
+      tier: result.pricing_tier,
+      notes: result.market_notes,
+    });
+    setIsVerifying(false);
   };
 
   const handleSubmit = async (e) => {
@@ -44,14 +115,8 @@ export default function RooferSignup() {
       email: form.email,
       phone: form.phone,
       license_number: form.license_number,
-      service_areas: form.service_areas_text
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
-      specialties: form.specialties_text
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
+      service_areas: form.service_areas_text.split(",").map((s) => s.trim()).filter(Boolean),
+      specialties: form.specialties_text.split(",").map((s) => s.trim()).filter(Boolean),
       status: "pending",
       rating: 0,
       total_reviews: 0,
