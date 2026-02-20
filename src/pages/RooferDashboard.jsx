@@ -16,6 +16,94 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import DynamicPricingEngine from "@/components/roofer/DynamicPricingEngine";
 
+function LeadCard({ lead, onStatusChange, onBidUpdate }) {
+  const [showPricing, setShowPricing] = useState(false);
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="pt-5">
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              <p className="text-sm font-semibold text-slate-800">{lead.address}</p>
+            </div>
+            {lead.homeowner_name && (
+              <div className="flex items-center gap-2">
+                <UserCheck className="w-3.5 h-3.5 text-slate-400" />
+                <p className="text-xs text-slate-500">{lead.homeowner_name}</p>
+              </div>
+            )}
+          </div>
+          <Badge className={`${leadStatusColors[lead.status]} border text-xs`}>
+            {lead.status?.replace("_", " ")}
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="bg-slate-50 rounded-lg p-2 text-center">
+            <p className="text-xs text-slate-400">Bid</p>
+            <p className="text-sm font-bold text-slate-800">${(lead.roofer_bid || lead.estimated_total)?.toLocaleString()}</p>
+          </div>
+          <div className="bg-slate-50 rounded-lg p-2 text-center">
+            <p className="text-xs text-slate-400">Area</p>
+            <p className="text-sm font-bold text-slate-800">{lead.roof_area_sqft?.toLocaleString()} ft²</p>
+          </div>
+          <div className="bg-slate-50 rounded-lg p-2 text-center">
+            <p className="text-xs text-slate-400">Tier</p>
+            <p className="text-xs font-medium text-slate-700 capitalize">{lead.tier || "—"}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex gap-3">
+            {lead.homeowner_phone && (
+              <a href={`tel:${lead.homeowner_phone}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800">
+                <Phone className="w-3 h-3" /> Call
+              </a>
+            )}
+            {lead.homeowner_email && (
+              <a href={`mailto:${lead.homeowner_email}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800">
+                <Mail className="w-3 h-3" /> Email
+              </a>
+            )}
+          </div>
+          <Select value={lead.status} onValueChange={(v) => onStatusChange(lead, v)}>
+            <SelectTrigger className="w-32 h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="new">New</SelectItem>
+              <SelectItem value="contacted">Contacted</SelectItem>
+              <SelectItem value="scheduled">Scheduled</SelectItem>
+              <SelectItem value="proposal_sent">Proposal Sent</SelectItem>
+              <SelectItem value="won">Won</SelectItem>
+              <SelectItem value="lost">Lost</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <p className="text-[10px] text-slate-400 mt-3">
+          {lead.created_date && format(new Date(lead.created_date), "MMM d, yyyy 'at' h:mm a")}
+        </p>
+
+        <button
+          onClick={() => setShowPricing(v => !v)}
+          className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs text-violet-600 hover:text-violet-800 bg-violet-50 hover:bg-violet-100 rounded-lg py-1.5 transition-colors"
+        >
+          <TrendingUp className="w-3.5 h-3.5" />
+          Pricing Engine
+          {showPricing ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        </button>
+
+        {showPricing && (
+          <div className="mt-3">
+            <DynamicPricingEngine lead={lead} roofer={null} onBidUpdate={onBidUpdate} />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 const leadStatusColors = {
   new: "bg-blue-50 text-blue-700 border-blue-200",
   contacted: "bg-amber-50 text-amber-700 border-amber-200",
