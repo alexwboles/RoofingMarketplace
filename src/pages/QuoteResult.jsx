@@ -18,66 +18,92 @@ import { ArrowLeft, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-// Generate a realistic roof polygon centered in the satellite view
-// The satellite is zoomed to z=20, which shows roughly 50-80m across for a typical home.
-// We place the roof outline in the center ~40% of the canvas to approximate the actual structure.
-function generateRoofPolygon(i, total, sectionFraction, complexity) {
+// Generate roof facet polygons that sit on top of the satellite roof footprint.
+// At z=21 the roof occupies roughly the center 38% W × 34% H of the 640×360 canvas.
+// We derive named-facet positions so each section lands on the correct part of the roof.
+function generateRoofPolygon(i, total, sectionFraction, complexity, sectionName) {
   const W = 640, H = 360;
-  // Roof occupies roughly the center 42% width and 38% height of the satellite at z=20
-  const roofW = W * 0.42;
-  const roofH = H * 0.38;
-  const cx = W / 2;
-  const cy = H / 2;
+  const rW = W * 0.38;   // roof footprint width on canvas
+  const rH = H * 0.34;   // roof footprint height on canvas
+  const cx = W / 2 - 10; // slight left offset to compensate Google Maps UI
+  const cy = H / 2 + 5;  // slight downward offset
+  const x0 = cx - rW / 2, y0 = cy - rH / 2;
+  const x1 = cx + rW / 2, y1 = cy + rH / 2;
+  const ridge = cy; // horizontal ridge line through center
+
+  // Try to position by section name keyword
+  const name = (sectionName || "").toLowerCase();
+  const isFront = /front|south|s[- ]|garage|main/.test(name);
+  const isBack  = /back|rear|north|n[- ]/.test(name);
+  const isLeft  = /left|west|w[- ]/.test(name);
+  const isRight = /right|east|e[- ]/.test(name);
+  const isGarage = /garage/.test(name);
+
+  const cut = rH * 0.18; // hip cut size
 
   if (total === 1) {
-    // Single polygon shaped like a simple gable/hip roof
+    // Full hip/gable over entire footprint
     if (complexity === "simple") {
-      // Gable: rectangle
-      const hw = roofW / 2, hh = roofH / 2;
-      return [
-        { x: cx - hw, y: cy - hh },
-        { x: cx + hw, y: cy - hh },
-        { x: cx + hw, y: cy + hh },
-        { x: cx - hw, y: cy + hh },
-      ];
+      return [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }];
+    }
+    return [
+      { x: x0 + cut, y: y0 }, { x: x1 - cut, y: y0 },
+      { x: x1, y: y0 + cut }, { x: x1, y: y1 - cut },
+      { x: x1 - cut, y: y1 }, { x: x0 + cut, y: y1 },
+      { x: x0, y: y1 - cut }, { x: x0, y: y0 + cut },
+    ];
+  }
+
+  // 2-slope gable: front slope (bottom half) + back slope (top half)
+  if (total === 2) {
+    const isFrontFace = i === 0 || isFront;
+    if (isFrontFace) {
+      // Front slope: ridge at top, eave at bottom
+      return [{ x: x0 + cut, y: ridge }, { x: x1 - cut, y: ridge }, { x: x1, y: y1 }, { x: x0, y: y1 }];
     } else {
-      // Hip roof: octagon-ish
-      const hw = roofW / 2, hh = roofH / 2, cut = roofH * 0.2;
-      return [
-        { x: cx - hw + cut, y: cy - hh },
-        { x: cx + hw - cut, y: cy - hh },
-        { x: cx + hw, y: cy - hh + cut },
-        { x: cx + hw, y: cy + hh - cut },
-        { x: cx + hw - cut, y: cy + hh },
-        { x: cx - hw + cut, y: cy + hh },
-        { x: cx - hw, y: cy + hh - cut },
-        { x: cx - hw, y: cy - hh + cut },
-      ];
+      return [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1 - cut, y: ridge }, { x: x0 + cut, y: ridge }];
     }
   }
 
-  // Multiple sections — split the roof area
-  const cols = total <= 2 ? total : 2;
+  // 4-slope hip roof: front, back, left end, right end
+  if (total === 4) {
+    const ridgeL = cx - rW * 0.28;
+    const ridgeR = cx + rW * 0.28;
+    if (isFront || i === 0) {
+      return [{ x: ridgeL, y: ridge }, { x: ridgeR, y: ridge }, { x: x1, y: y1 }, { x: x0, y: y1 }];
+    }
+    if (isBack || i === 1) {
+      return [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: ridgeR, y: ridge }, { x: ridgeL, y: ridge }];
+    }
+    if (isLeft || i === 2) {
+      return [{ x: x0, y: y0 }, { x: ridgeL, y: ridge }, { x: x0, y: y1 }];
+    }
+    // right end
+    return [{ x: x1, y: y0 }, { x: x1, y: y1 }, { x: ridgeR, y: ridge }];
+  }
+
+  // Garage or additional sections — place in a scaled sub-region
+  if (isGarage) {
+    const gx0 = x0, gy0 = cy, gx1 = cx - rW * 0.05, gy1 = y1;
+    return [{ x: gx0, y: gy0 }, { x: gx1, y: gy0 }, { x: gx1, y: gy1 }, { x: gx0, y: gy1 }];
+  }
+
+  // Generic fallback: tile the roof footprint proportionally
+  const cols = total <= 2 ? total : total <= 4 ? 2 : 3;
   const rows = Math.ceil(total / cols);
   const col = i % cols;
   const row = Math.floor(i / cols);
-  const secW = roofW / cols;
-  const secH = roofH / rows;
-  const gap = 4;
-  const x1 = cx - roofW / 2 + col * secW + gap;
-  const y1 = cy - roofH / 2 + row * secH + gap;
-  const x2 = x1 + secW - gap * 2;
-  const y2 = y1 + secH - gap * 2;
-  // Fraction scales the polygon area proportionally
-  const scaleX = Math.sqrt(sectionFraction || 1);
-  const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
-  const sx1 = midX - (midX - x1) * scaleX;
-  const sx2 = midX + (x2 - midX) * scaleX;
+  const sw = rW / cols, sh = rH / rows;
+  const gap = 3;
+  const fx0 = x0 + col * sw + gap, fy0 = y0 + row * sh + gap;
+  const fx1 = fx0 + sw - gap * 2, fy1 = fy0 + sh - gap * 2;
+  const scale = Math.sqrt(sectionFraction || 1);
+  const mx = (fx0 + fx1) / 2, my = (fy0 + fy1) / 2;
   return [
-    { x: sx1, y: y1 },
-    { x: sx2, y: y1 },
-    { x: sx2, y: y2 },
-    { x: sx1, y: y2 },
+    { x: mx - (mx - fx0) * scale, y: fy0 },
+    { x: mx + (fx1 - mx) * scale, y: fy0 },
+    { x: mx + (fx1 - mx) * scale, y: fy1 },
+    { x: mx - (mx - fx0) * scale, y: fy1 },
   ];
 }
 

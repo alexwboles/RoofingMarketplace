@@ -177,7 +177,7 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
           height={CANVAS_H}
           style={{ border: 0, pointerEvents: "none" }}
           loading="lazy"
-          src={`https://maps.google.com/maps?q=${encodedAddress}&t=k&z=20&output=embed`}
+          src={`https://maps.google.com/maps?q=${encodedAddress}&t=k&z=21&output=embed`}
         />
 
         <svg
