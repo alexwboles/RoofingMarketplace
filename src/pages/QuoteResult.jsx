@@ -8,6 +8,8 @@ import MaterialsList from "@/components/quote/MaterialsList";
 import PriceEstimate from "@/components/quote/PriceEstimate";
 import MaterialTypeSelector from "@/components/quote/MaterialTypeSelector";
 import ContactForm from "@/components/quote/ContactForm";
+import SatelliteImageViewer from "@/components/quote/SatelliteImageViewer";
+import RoofReport from "@/components/quote/RoofReport";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MapPin, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
