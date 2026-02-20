@@ -20,9 +20,27 @@ import AppointmentManager from "@/components/appointments/AppointmentManager";
 
 function LeadCard({ lead, onStatusChange, onBidUpdate }) {
   const [showPricing, setShowPricing] = useState(false);
+  const satelliteUrl = lead.satellite_image_url || `https://maps.google.com/maps?q=${encodeURIComponent(lead.address)}&t=k&z=20`;
+
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="pt-5">
+    <Card className="hover:shadow-md transition-shadow overflow-hidden">
+      {/* Satellite thumbnail */}
+      <div className="relative h-32 bg-slate-900 overflow-hidden">
+        <iframe
+          title="Satellite"
+          src={satelliteUrl}
+          width="100%"
+          height="256"
+          style={{ border: 0, pointerEvents: "none", marginTop: "-62px" }}
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/60" />
+        <Badge className={`absolute top-2 right-2 ${leadStatusColors[lead.status]} border text-xs`}>
+          {lead.status?.replace("_", " ")}
+        </Badge>
+      </div>
+
+      <CardContent className="pt-3 pb-4">
         <div className="flex items-start justify-between mb-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -36,9 +54,14 @@ function LeadCard({ lead, onStatusChange, onBidUpdate }) {
               </div>
             )}
           </div>
-          <Badge className={`${leadStatusColors[lead.status]} border text-xs`}>
-            {lead.status?.replace("_", " ")}
-          </Badge>
+          <a
+            href={satelliteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-blue-500 hover:text-blue-700 flex items-center gap-0.5 shrink-0"
+          >
+            <Satellite className="w-3 h-3" /> View Map
+          </a>
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-4">
