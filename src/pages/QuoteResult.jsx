@@ -631,11 +631,6 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
                 aiSuggestions={quote.roof_analysis?.ai_suggestions}
               />
 
-              {/* Replacement Roofing Material */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-6">
-                <MaterialTypeSelector value={materialType} onChange={handleMaterialChange} />
-              </div>
-
               {/* Materials List */}
               <MaterialsList materials={quote.materials_list} />
 
