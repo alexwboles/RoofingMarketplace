@@ -419,10 +419,15 @@ Calculate:
         });
       }
 
+      // Use section sum as authoritative total (sections are more accurate)
+      const sectionTotal = validSections.reduce((sum, s) => sum + (s.area_sqft || 0), 0);
+      const accurateTotal = sectionTotal > 900 ? sectionTotal : analysis.total_area_sqft;
+
       // Update the quote
       const updatedQuote = {
         roof_analysis: {
           ...analysis,
+          total_area_sqft: accurateTotal,
           roof_sections: validSections
         },
         materials_list: pricing.materials,
