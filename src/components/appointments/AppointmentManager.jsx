@@ -118,7 +118,8 @@ export default function AppointmentManager({ rooferId, rooferCompany }) {
 
   return (
     <Tabs defaultValue="upcoming">
-      <TabsList className="bg-white border mb-4">
+      <TabsList className="bg-white border mb-4 flex-wrap h-auto gap-1 py-1">
+        <TabsTrigger value="calendar"><CalendarDays className="w-3.5 h-3.5 mr-1" /> Calendar</TabsTrigger>
         <TabsTrigger value="upcoming">Upcoming ({upcoming.length})</TabsTrigger>
         <TabsTrigger value="past">Past</TabsTrigger>
         <TabsTrigger value="availability">
