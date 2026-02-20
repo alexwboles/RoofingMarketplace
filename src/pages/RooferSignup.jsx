@@ -112,7 +112,7 @@ Based on all findings, provide: overall_risk: "low", "medium", or "high", and re
     e.preventDefault();
     setIsSubmitting(true);
 
-    await base44.entities.Roofer.create({
+    const roofer = await base44.entities.Roofer.create({
       company_name: form.company_name,
       contact_name: form.contact_name,
       email: form.email,
@@ -126,15 +126,20 @@ Based on all findings, provide: overall_risk: "low", "medium", or "high", and re
       leads_claimed: 0,
     });
 
+    setCreatedRooferId(roofer.id);
+    setStep(2);
+    setIsSubmitting(false);
+  };
+
+  const handleVerificationComplete = async () => {
     await base44.integrations.Core.SendEmail({
       to: form.email,
       subject: "Welcome to RoofQuote AI!",
-      body: `Hi ${form.contact_name},\n\nThank you for signing up as a roofing contractor on RoofQuote AI!\n\nYour application is under review. Once approved, you'll start receiving pre-qualified leads with detailed roof measurements.\n\nBest,\nRoofQuote AI Team`,
+      body: `Hi ${form.contact_name},\n\nThank you for signing up as a roofing contractor on RoofQuote AI!\n\nYour documents have been verified and your application is now under review. Once approved, you'll start receiving pre-qualified leads with detailed roof measurements.\n\nBest,\nRoofQuote AI Team`,
     });
 
-    setIsSubmitting(false);
     setIsSubmitted(true);
-    toast.success("Application submitted successfully!");
+    toast.success("Documents verified! Application submitted successfully!");
   };
 
   if (isSubmitted) {
