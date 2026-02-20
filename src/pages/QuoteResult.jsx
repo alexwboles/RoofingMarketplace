@@ -166,7 +166,12 @@ Roof Analysis:
 
 Generate a realistic materials list with current 2026 pricing. Include all necessary items: shingles/roofing material, underlayment, ice & water shield, drip edge, ridge cap, flashing, pipe boots, nails, starter strip, hip & ridge shingles, ventilation, etc. Adjust quantities based on waste factor (typically 10-15%).
 
-Also calculate total materials cost, estimated labor cost (varies by complexity and material), and total project estimate.`,
+Calculate:
+- materials_cost (total material cost)
+- labor_cost (estimated labor)
+- estimated_total (midpoint estimate)
+- price_range_low (estimated_total minus ~8%)
+- price_range_high (estimated_total plus ~15%, accounting for contractor markup and contingencies)`,
       response_json_schema: {
         type: "object",
         properties: {
@@ -185,7 +190,9 @@ Also calculate total materials cost, estimated labor cost (varies by complexity 
           },
           materials_cost: { type: "number" },
           labor_cost: { type: "number" },
-          estimated_total: { type: "number" }
+          estimated_total: { type: "number" },
+          price_range_low: { type: "number" },
+          price_range_high: { type: "number" }
         }
       }
     });
