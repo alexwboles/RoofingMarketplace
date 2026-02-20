@@ -708,14 +708,8 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
               {/* Contact Form — get your free quote */}
               <ContactForm onSubmit={(info) => handleContactSubmit({ ...info, payment_type: paymentType })} isLoading={isSubmitting} />
 
-              {/* Roof Report (editable) */}
-              <RoofReport
-                analysis={quote.roof_analysis}
-                onSave={handleAnalysisEdit}
-              />
-
-              {/* Materials List */}
-              <MaterialsList materials={quote.materials_list} />
+              {/* Summary of key metrics */}
+              <QuoteSummary analysis={quote.roof_analysis} />
 
               {/* Price Estimate */}
               <PriceEstimate
@@ -726,6 +720,20 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
                 priceRangeHigh={quote.price_range_high}
                 materialType={materialType}
               />
+
+              {/* Optional: Detailed breakdown sections (collapsed by default) */}
+              <details className="group border border-slate-200 rounded-xl">
+                <summary className="cursor-pointer px-6 py-4 font-semibold text-slate-900 hover:bg-slate-50 transition-colors">
+                  View Full Analysis & Materials
+                </summary>
+                <div className="border-t border-slate-200 px-6 py-4 space-y-6">
+                  <RoofReport
+                    analysis={quote.roof_analysis}
+                    onSave={handleAnalysisEdit}
+                  />
+                  <MaterialsList materials={quote.materials_list} />
+                </div>
+              </details>
             </div>
           )}
         </div>
