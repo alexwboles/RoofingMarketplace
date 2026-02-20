@@ -3,10 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DollarSign, Hammer, Package, TrendingDown } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function PriceEstimate({ materialsCost, laborCost, total, materialType }) {
+export default function PriceEstimate({ materialsCost, laborCost, total, priceRangeLow, priceRangeHigh, materialType }) {
   const formatMaterialType = (type) => {
     return (type || "architectural_shingle").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   };
+
+  const low = priceRangeLow || Math.round((total || 0) * 0.92);
+  const high = priceRangeHigh || Math.round((total || 0) * 1.15);
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -16,11 +19,11 @@ export default function PriceEstimate({ materialsCost, laborCost, total, materia
             <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl mb-3 shadow-lg shadow-amber-200">
               <DollarSign className="w-7 h-7 text-white" />
             </div>
-            <p className="text-sm font-medium text-amber-800/70">Estimated Total</p>
-            <p className="text-4xl font-bold text-slate-900 mt-1">
-              ${total?.toLocaleString()}
+            <p className="text-sm font-medium text-amber-800/70">Estimated Price Range</p>
+            <p className="text-3xl font-bold text-slate-900 mt-1">
+              ${low?.toLocaleString()} – ${high?.toLocaleString()}
             </p>
-            <p className="text-xs text-slate-500 mt-1">{formatMaterialType(materialType)}</p>
+            <p className="text-xs text-slate-500 mt-1">{formatMaterialType(materialType)} • midpoint ~${total?.toLocaleString()}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
