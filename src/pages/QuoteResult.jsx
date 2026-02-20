@@ -203,39 +203,137 @@ Also calculate total materials cost, estimated labor cost (varies by complexity 
     setQuote((prev) => ({ ...prev, ...updates }));
   };
 
-  const handleContactSubmit = async (contactInfo) => {
+  const generateRooferProposals = useCallback(async (info, totalEstimate, matType) => {
+    // AI-generate 3 matched roofer profiles (economy, standard, premium)
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `Generate 3 realistic roofing contractor proposals for a homeowner at ${quote?.address || "a residential address"}. 
+The roof replacement estimate is $${totalEstimate?.toLocaleString()} for ${matType?.replace(/_/g, " ")} material.
+
+Create 3 contractors:
+1. "economy" tier: competitive price, solid quality, slightly lower rating
+2. "standard" tier: mid-range price, popular choice, great rating  
+3. "premium" tier: higher price, top-rated, most experienced
+
+Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), rating (4.0-5.0), reviews (50-500), specialty (material type and experience), and bid_price (economy: 5-10% below estimate, standard: at estimate, premium: 5-15% above estimate).`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          proposals: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                tier: { type: "string" },
+                company_name: { type: "string" },
+                contact_name: { type: "string" },
+                phone: { type: "string" },
+                rating: { type: "number" },
+                reviews: { type: "number" },
+                specialty: { type: "string" },
+                bid_price: { type: "number" }
+              }
+            }
+          }
+        }
+      }
+    });
+    return result.proposals || [];
+  }, [quote]);
+
+  const handleContactSubmit = async (info) => {
     setIsSubmitting(true);
+    setContactInfo(info);
 
     await base44.entities.RoofQuote.update(quoteId, {
-      homeowner_name: contactInfo.name,
-      homeowner_email: contactInfo.email,
-      homeowner_phone: contactInfo.phone,
+      homeowner_name: info.name,
+      homeowner_email: info.email,
+      homeowner_phone: info.phone,
       status: "lead_sent",
     });
 
-    // Create lead records for matching roofers
-    await base44.entities.Lead.create({
-      quote_id: quoteId,
-      homeowner_name: contactInfo.name,
-      homeowner_email: contactInfo.email,
-      homeowner_phone: contactInfo.phone,
-      address: quote.address,
-      estimated_total: quote.estimated_total,
-      material_type: materialType,
-      roof_area_sqft: quote.roof_analysis?.total_area_sqft,
-      status: "new",
-    });
-
-    // Notify homeowner
-    await base44.integrations.Core.SendEmail({
-      to: contactInfo.email,
-      subject: "Your Roof Replacement Quote is Ready!",
-      body: `Hi ${contactInfo.name},\n\nThank you for using RoofQuote AI! Your estimated roof replacement cost for ${quote.address} is $${quote.estimated_total?.toLocaleString()}.\n\nLocal roofers will be reaching out to you shortly with competitive bids.\n\nBest,\nRoofQuote AI Team`,
-    });
-
     setIsSubmitting(false);
-    setIsSubmitted(true);
-    toast.success("Your quote has been sent to local roofers!");
+    setIsMatchingRoofers(true);
+
+    // Generate 3 roofer proposals
+    const rawProposals = await generateRooferProposals(info, quote.estimated_total, materialType);
+
+    // Create Lead records for each
+    const createdProposals = await Promise.all(
+      rawProposals.map((p, i) =>
+        base44.entities.Lead.create({
+          quote_id: quoteId,
+          homeowner_name: info.name,
+          homeowner_email: info.email,
+          homeowner_phone: info.phone,
+          address: quote.address,
+          estimated_total: quote.estimated_total,
+          material_type: materialType,
+          roof_area_sqft: quote.roof_analysis?.total_area_sqft,
+          status: "new",
+          tier: p.tier,
+          roofer_bid: p.bid_price,
+          roofer_name: p.contact_name,
+          roofer_company: p.company_name,
+          roofer_phone: p.phone,
+          roofer_rating: p.rating,
+          roofer_reviews: p.reviews,
+          roofer_specialty: p.specialty,
+        })
+      )
+    );
+
+    setProposals(createdProposals);
+    setIsMatchingRoofers(false);
+    toast.success("Matched with 3 local roofers!");
+  };
+
+  const handleSelectRoofer = async (proposal) => {
+    setIsSelecting(true);
+
+    // Create a Project record
+    const defaultMilestones = [
+      { title: "Contract Signed", description: "Review and sign the project contract", status: "complete", completed_date: new Date().toLocaleDateString(), payment_amount: 0, payment_status: "paid" },
+      { title: "Materials Ordered", description: "Contractor orders all necessary materials", status: "pending", payment_amount: Math.round(proposal.roofer_bid * 0.3), payment_status: "unpaid" },
+      { title: "Old Roof Tear-Off", description: "Remove existing roofing materials", status: "pending", payment_amount: 0, payment_status: "unpaid" },
+      { title: "New Roof Installation", description: "Install new roofing system", status: "pending", payment_amount: Math.round(proposal.roofer_bid * 0.5), payment_status: "unpaid" },
+      { title: "Final Inspection & Cleanup", description: "Inspection, punch list, and site cleanup", status: "pending", payment_amount: Math.round(proposal.roofer_bid * 0.2), payment_status: "unpaid" },
+    ];
+
+    const proj = await base44.entities.Project.create({
+      lead_id: proposal.id,
+      quote_id: quoteId,
+      homeowner_name: contactInfo?.name,
+      homeowner_email: contactInfo?.email,
+      homeowner_phone: contactInfo?.phone,
+      roofer_company: proposal.roofer_company,
+      roofer_name: proposal.roofer_name,
+      roofer_phone: proposal.roofer_phone,
+      address: quote.address,
+      material_type: materialType,
+      contract_amount: proposal.roofer_bid,
+      amount_paid: 0,
+      status: "scheduled",
+      milestones: defaultMilestones,
+      messages: [],
+      payment_transactions: [],
+    });
+
+    // Mark this lead as accepted
+    await base44.entities.Lead.update(proposal.id, { status: "accepted", homeowner_selected: true });
+
+    // Send confirmation email
+    if (contactInfo?.email) {
+      await base44.integrations.Core.SendEmail({
+        to: contactInfo.email,
+        subject: "Your Roofing Project is Confirmed!",
+        body: `Hi ${contactInfo?.name},\n\nGreat news! You've selected ${proposal.roofer_company} for your roof replacement at ${quote.address}.\n\nProject total: $${proposal.roofer_bid?.toLocaleString()}\n\nYou can track your project progress at any time.\n\nBest,\nRoofQuote AI Team`,
+      });
+    }
+
+    setProjectId(proj.id);
+    setIsSelecting(false);
+    setIsComplete(true);
+    toast.success("Roofer selected! Your project has been created.");
   };
 
   return (
