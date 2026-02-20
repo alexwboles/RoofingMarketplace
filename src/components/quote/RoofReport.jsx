@@ -59,6 +59,11 @@ export default function RoofReport({ analysis, onSave, aiSuggestions }) {
 
   if (!analysis) return null;
 
+  const diffScore = analysis.difficulty_score || 0;
+  const diffColor = diffScore >= 8 ? "text-red-600 bg-red-50 border-red-200"
+    : diffScore >= 5 ? "text-amber-600 bg-amber-50 border-amber-200"
+    : "text-emerald-600 bg-emerald-50 border-emerald-200";
+
   const sections = [
     {
       title: "Primary Measurements",
@@ -67,7 +72,17 @@ export default function RoofReport({ analysis, onSave, aiSuggestions }) {
       fields: [
         { key: "total_area_sqft", label: "Total Roof Area (sq ft)", type: "number" },
         { key: "pitch", label: "Pitch (rise/run)", type: "text", placeholder: "e.g. 6/12" },
-        { key: "num_facets", label: "Number of Facets (Planes)", type: "number" },
+        { key: "pitch_multiplier", label: "Pitch Multiplier", type: "number" },
+        { key: "num_facets", label: "Number of Facets", type: "number" },
+      ],
+    },
+    {
+      title: "Overhang & Waste",
+      icon: ArrowUpDown,
+      color: "text-cyan-600",
+      fields: [
+        { key: "overhang_inches", label: "Overhang (inches)", type: "number" },
+        { key: "waste_factor", label: "Waste Factor", type: "number" },
       ],
     },
     {
