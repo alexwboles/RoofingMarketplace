@@ -43,9 +43,10 @@ Deno.serve(async (req) => {
       }
 
       // Add transaction record
+      const txDescription = session.metadata?.description || milestones[idx]?.title || "Project Payment";
       const transactions = [...(project.payment_transactions || []), {
         amount: paidAmount,
-        description: milestones[idx]?.title || "Milestone Payment",
+        description: txDescription,
         date: new Date().toLocaleDateString(),
         status: "completed",
         method: "Stripe",
