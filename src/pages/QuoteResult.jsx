@@ -527,11 +527,20 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
     // Generate 3 roofer proposals
     const rawProposals = await generateRooferProposals(info, quote.estimated_total, materialType);
 
+    // Find or get roofers to assign leads to
+    const roofers = await base44.entities.Roofer.filter({ status: "approved" }, "-rating", 100);
+    
     // Create Lead records for each
     const createdProposals = await Promise.all(
-      rawProposals.map((p, i) =>
-        base44.entities.Lead.create({
+      rawProposals.map((p, i) => {
+        // Match roofer by company name or get next available
+        const matchedRoofer = roofers.find(r => 
+          r.company_name?.toLowerCase() === p.company_name?.toLowerCase()
+        ) || roofers[i % roofers.length];
+        
+        return base44.entities.Lead.create({
           quote_id: quoteId,
+          roofer_id: matchedRoofer?.id || null,
           homeowner_name: info.name,
           homeowner_email: info.email,
           homeowner_phone: info.phone,
@@ -549,8 +558,8 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
           roofer_rating: p.rating,
           roofer_reviews: p.reviews,
           roofer_specialty: p.specialty,
-        })
-      )
+        });
+      })
     );
 
     setProposals(createdProposals);
