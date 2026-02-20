@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowRight, Home, FileText, CheckCircle2, Clock, DollarSign, MapPin, Loader2 } from "lucide-react";
+import { ArrowRight, Home, FileText, CheckCircle2, Clock, DollarSign, MapPin, Loader2, Plus } from "lucide-react";
 
 const quoteStatusColors = {
   analyzing: "bg-blue-50 text-blue-700 border-blue-200",
