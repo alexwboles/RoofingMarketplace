@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,12 +8,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   MapPin, Phone, Mail, DollarSign, Clock,
-  CheckCircle2, UserCheck, FileText, Loader2, FolderOpen, ArrowRight
+  CheckCircle2, UserCheck, FileText, Loader2, FolderOpen, ArrowRight, TrendingUp, ChevronDown, ChevronUp
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import DynamicPricingEngine from "@/components/roofer/DynamicPricingEngine";
 
 const leadStatusColors = {
   new: "bg-blue-50 text-blue-700 border-blue-200",
