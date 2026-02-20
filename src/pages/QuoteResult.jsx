@@ -387,6 +387,10 @@ Calculate:
         status: "quoted",
       };
 
+      // Store satellite image URL on the quote for sharing with roofers
+      const satelliteImageUrl = `https://maps.google.com/maps?q=${encodeURIComponent(quoteData.address)}&t=k&z=20`;
+      updatedQuote.satellite_image_url = satelliteImageUrl;
+
       await base44.entities.RoofQuote.update(quoteId, updatedQuote);
 
       const secTotal = (analysis.roof_sections || []).reduce((sum, s) => sum + (s.area_sqft || 0), 0);
