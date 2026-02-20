@@ -207,7 +207,7 @@ export default function ProjectView() {
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                     {isRoofer ? "Homeowner Contact" : "Your Roofer"}
                   </p>
-                  {isRoofer ? [
+                  {(isRoofer ? [
                     { label: "Name", value: project.homeowner_name },
                     { label: "Phone", value: project.homeowner_phone },
                     { label: "Email", value: project.homeowner_email },
@@ -215,7 +215,7 @@ export default function ProjectView() {
                     { label: "Company", value: project.roofer_company },
                     { label: "Contact", value: project.roofer_name },
                     { label: "Phone", value: project.roofer_phone },
-                  ].map((r, i) => (
+                  ]).map((r, i) => (
                     <div key={i} className="flex justify-between text-sm py-1 border-b border-slate-50 last:border-0">
                       <span className="text-slate-400">{r.label}</span>
                       <span className="text-slate-800 font-medium">{r.value}</span>
