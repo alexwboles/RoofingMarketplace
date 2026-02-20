@@ -220,7 +220,6 @@ Also calculate total materials cost, estimated labor cost (varies by complexity 
   }, [quoteId, analyzeRoof, generateMaterialsAndPricing]);
 
   const handleAnalysisEdit = async (updatedAnalysis) => {
-    // Regenerate pricing based on edited roof measurements
     const pricing = await generateMaterialsAndPricing(updatedAnalysis, materialType);
     const updates = {
       roof_analysis: updatedAnalysis,
@@ -231,6 +230,13 @@ Also calculate total materials cost, estimated labor cost (varies by complexity 
     };
     await base44.entities.RoofQuote.update(quoteId, updates);
     setQuote((prev) => ({ ...prev, ...updates }));
+  };
+
+  const handleSectionsChange = async (sections, totalSqft) => {
+    setRoofSections(sections);
+    const updatedAnalysis = { ...quote.roof_analysis, total_area_sqft: totalSqft };
+    await handleAnalysisEdit(updatedAnalysis);
+    toast.success("Roof area updated from sections!");
   };
 
   const handleMaterialChange = async (newType) => {
