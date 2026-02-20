@@ -17,6 +17,27 @@ import { ArrowLeft, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
+// Generate a default stacked rectangle polygon for a section index
+function generateDefaultPolygon(i, total) {
+  const cols = Math.min(total, 2);
+  const col = i % cols;
+  const row = Math.floor(i / cols);
+  const W = 640, H = 360;
+  const cellW = W / cols;
+  const cellH = H / Math.ceil(total / cols);
+  const pad = 20;
+  const x1 = col * cellW + pad;
+  const y1 = row * cellH + pad;
+  const x2 = (col + 1) * cellW - pad;
+  const y2 = (row + 1) * cellH - pad;
+  return [
+    { x: x1, y: y1 },
+    { x: x2, y: y1 },
+    { x: x2, y: y2 },
+    { x: x1, y: y2 },
+  ];
+}
+
 export default function QuoteResult() {
   const [quote, setQuote] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(true);
