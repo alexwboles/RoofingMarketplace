@@ -181,10 +181,10 @@ Return all fields including:
 - difficulty_score (1-10), difficulty_factors (string array)
 - num_facets, num_peaks, num_valleys, num_hips
 - ridge_length_ft, eave_length_ft, rake_length_ft, valley_length_ft
-- obstacles: [{type, count}]
+- obstacles: array of ONLY items physically visible on the roof surface (skylights, chimneys, plumbing vents/pipes, HVAC units, solar panels, satellite dishes). Each item: {type: string, count: number}. If none are visible, return an empty array. DO NOT guess. Only include what you can realistically confirm from satellite/street-view data.
 - complexity: "simple" | "moderate" | "complex"
 - stories, current_material, current_material_label
-- roof_sections: [{name, area_sqft, pitch}] — must sum to total_area_sqft
+- roof_sections: [{name, area_sqft, pitch}] — MUST sum to total_area_sqft. Use directional names (Front Slope, Back Slope, Left Hip, Right Hip, Garage Roof, etc.) so sections can be auto-positioned on the satellite view.
 - ai_suggestions: 2-3 specific tips for this property/climate`,
       response_json_schema: {
         type: "object",
