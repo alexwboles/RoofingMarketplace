@@ -279,6 +279,9 @@ Also calculate total materials cost, estimated labor cost (varies by complexity 
             </motion.div>
           ) : (
             <div className="space-y-6">
+              {/* Satellite Image */}
+              <SatelliteImageViewer address={quote.address} />
+
               {/* Price Estimate */}
               <PriceEstimate
                 materialsCost={quote.materials_cost}
@@ -292,11 +295,11 @@ Also calculate total materials cost, estimated labor cost (varies by complexity 
                 <MaterialTypeSelector value={materialType} onChange={handleMaterialChange} />
               </div>
 
-              {/* Analysis & Materials */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <RoofAnalysisCard analysis={quote.roof_analysis} />
-                <MaterialsList materials={quote.materials_list} />
-              </div>
+              {/* Roof Report (editable) */}
+              <RoofReport analysis={quote.roof_analysis} onSave={handleAnalysisEdit} />
+
+              {/* Materials List */}
+              <MaterialsList materials={quote.materials_list} />
 
               {/* Contact Form */}
               <ContactForm onSubmit={handleContactSubmit} isLoading={isSubmitting} />
