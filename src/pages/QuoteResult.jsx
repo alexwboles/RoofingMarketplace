@@ -655,6 +655,12 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
                {/* Summary of key metrics — moved here */}
                <QuoteSummary analysis={quote.roof_analysis} />
 
+               {/* Property Details (optional, improves analysis) */}
+               <PropertyDetailsForm value={propertyDetails} onChange={setPropertyDetails} />
+
+               {/* Contact Form — get your free quote */}
+               <ContactForm onSubmit={(info) => handleContactSubmit({ ...info, payment_type: paymentType })} isLoading={isSubmitting} />
+
                {/* Price Estimate */}
                <PriceEstimate
                  materialsCost={quote.materials_cost}
@@ -664,12 +670,6 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
                  priceRangeHigh={quote.price_range_high}
                  materialType={materialType}
                />
-
-               {/* Property Details (optional, improves analysis) */}
-               <PropertyDetailsForm value={propertyDetails} onChange={setPropertyDetails} />
-
-               {/* Contact Form — get your free quote */}
-               <ContactForm onSubmit={(info) => handleContactSubmit({ ...info, payment_type: paymentType })} isLoading={isSubmitting} />
 
               {/* Optional: Detailed breakdown sections (collapsed by default) */}
               <details className="group border border-slate-200 rounded-xl">
