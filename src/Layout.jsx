@@ -45,18 +45,18 @@ export default function Layout({ children, currentPageName }) {
               Home
             </Link>
             <Link
-              to={createPageUrl("RooferDashboard")}
+              to={createPageUrl("HomeownerDashboard")}
               className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5"
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
-              Dashboard
+              Homeowner
             </Link>
             <Link
-              to={createPageUrl("RooferSignup")}
+              to={createPageUrl("RooferDashboard")}
               className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5"
             >
-              <Hammer className="w-3.5 h-3.5" />
-              For Roofers
+              <HammerIcon className="w-3.5 h-3.5" />
+              Roofer
             </Link>
           </div>
         </div>
