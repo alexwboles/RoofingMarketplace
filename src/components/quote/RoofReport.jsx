@@ -284,39 +284,44 @@ export default function RoofReport({ analysis, onSave, aiSuggestions }) {
           )}
         </div>
 
-        {/* Roof Sections / Facets Breakdown */}
-        {!editing && analysis.roof_sections?.length > 0 && (
+        {/* Condition & Remaining Life */}
+        {!editing && (analysis.condition_notes || analysis.estimated_remaining_life_years) && (
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Layers className={`w-4 h-4 text-indigo-600`} />
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Facets / Planes Breakdown</p>
+              <AlertTriangle className="w-4 h-4 text-amber-500" />
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Current Roof Condition</p>
             </div>
-            <div className="space-y-2">
-              {analysis.roof_sections.map((sec, i) => {
-                const pct = analysis.total_area_sqft ? Math.round((sec.area_sqft / analysis.total_area_sqft) * 100) : 0;
-                const colors = ["bg-blue-500","bg-violet-500","bg-emerald-500","bg-amber-500","bg-rose-500","bg-teal-500"];
-                return (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${colors[i % colors.length]}`} />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span className="text-xs font-medium text-slate-700">{sec.name}</span>
-                        <span className="text-xs font-bold text-slate-800">{sec.area_sqft?.toLocaleString()} ft²</span>
-                      </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${colors[i % colors.length]}`} style={{ width: `${pct}%` }} />
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{pct}%</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {analysis.estimated_remaining_life_years != null && (
+                <div className={`rounded-xl border p-3 flex items-center gap-3 ${
+                  analysis.estimated_remaining_life_years <= 3 ? "bg-red-50 border-red-200"
+                  : analysis.estimated_remaining_life_years <= 7 ? "bg-amber-50 border-amber-200"
+                  : "bg-emerald-50 border-emerald-200"
+                }`}>
+                  <Clock className={`w-5 h-5 shrink-0 ${
+                    analysis.estimated_remaining_life_years <= 3 ? "text-red-500"
+                    : analysis.estimated_remaining_life_years <= 7 ? "text-amber-500"
+                    : "text-emerald-500"
+                  }`} />
+                  <div>
+                    <p className="text-xs text-slate-500">Est. Remaining Life</p>
+                    <p className="text-base font-bold text-slate-800">~{analysis.estimated_remaining_life_years} years</p>
                   </div>
-                );
-              })}
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
-                <span className="text-xs font-semibold text-slate-500">Total Roof Area</span>
-                <span className="text-sm font-bold text-slate-900">{(analysis.total_area_sqft || 0).toLocaleString()} ft²</span>
-              </div>
+                </div>
+              )}
+              {analysis.condition_notes && (
+                <div className="bg-slate-50 rounded-xl border border-slate-200 p-3">
+                  <p className="text-xs text-slate-400 mb-1">Observed Condition</p>
+                  <p className="text-sm text-slate-700">{analysis.condition_notes}</p>
+                </div>
+              )}
             </div>
           </div>
+        )}
+
+        {/* Roof Sections / Facets Breakdown */}
+        {!editing && analysis.roof_sections?.length > 0 && (
+          <FacetsBreakdown analysis={analysis} />
         )}
 
         {/* Difficulty Score */}
