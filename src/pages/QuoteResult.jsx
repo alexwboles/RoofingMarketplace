@@ -705,14 +705,14 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
               {/* Property Details (optional, improves analysis) */}
               <PropertyDetailsForm value={propertyDetails} onChange={setPropertyDetails} />
 
+              {/* Contact Form — get your free quote */}
+              <ContactForm onSubmit={(info) => handleContactSubmit({ ...info, payment_type: paymentType })} isLoading={isSubmitting} />
+
               {/* Roof Report (editable) */}
               <RoofReport
                 analysis={quote.roof_analysis}
                 onSave={handleAnalysisEdit}
               />
-
-              {/* Contact Form — directly below the report */}
-              <ContactForm onSubmit={(info) => handleContactSubmit({ ...info, payment_type: paymentType })} isLoading={isSubmitting} />
 
               {/* Materials List */}
               <MaterialsList materials={quote.materials_list} />
