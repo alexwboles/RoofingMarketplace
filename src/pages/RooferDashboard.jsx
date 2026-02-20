@@ -183,6 +183,16 @@ export default function RooferDashboard() {
     queryFn: () => base44.entities.RooferBid.filter({}, "-created_date", 100),
   });
 
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["reviews"],
+    queryFn: () => base44.entities.Review.list("-created_date", 100),
+  });
+
+  const { data: appointments = [] } = useQuery({
+    queryKey: ["appointments"],
+    queryFn: () => base44.entities.Appointment.list("-created_date", 100),
+  });
+
   const updateLeadMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Lead.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["leads"] }),
