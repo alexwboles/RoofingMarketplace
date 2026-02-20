@@ -27,20 +27,15 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       {/* Top Navigation Bar */}
       <nav className="absolute top-0 left-0 right-0 z-20 px-4 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Logo />
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate(createPageUrl("HomeownerDashboard"))} className="flex items-center gap-1.5">
-              <LayoutDashboard className="w-4 h-4" />
-              Homeowner
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate(createPageUrl("RooferDashboard"))} className="flex items-center gap-1.5">
-              <HammerIcon className="w-4 h-4" />
-              Roofer
-            </Button>
-          </div>
+        <div className="max-w-6xl mx-auto flex items-center justify-end gap-2">
+          <Button size="sm" onClick={() => navigate(createPageUrl("HomeownerDashboard"))} className="flex items-center gap-1.5 text-white hover:bg-white/20">
+            <LayoutDashboard className="w-4 h-4" />
+            Homeowner
+          </Button>
+          <Button size="sm" onClick={() => navigate(createPageUrl("RooferDashboard"))} className="flex items-center gap-1.5 text-white hover:bg-white/20">
+            <HammerIcon className="w-4 h-4" />
+            Roofer
+          </Button>
         </div>
       </nav>
 
