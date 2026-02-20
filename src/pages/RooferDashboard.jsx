@@ -25,7 +25,7 @@ import ResponseTimeAnalytics from "@/components/analytics/ResponseTimeAnalytics"
 
 function LeadCard({ lead, onStatusChange, onBidUpdate }) {
   const [showPricing, setShowPricing] = useState(false);
-  const satelliteUrl = lead.satellite_image_url || `https://maps.google.com/maps?q=${encodeURIComponent(lead.address)}&t=k&z=20`;
+  const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(lead.address)}&t=k&z=20`;
 
   return (
     <Card className="hover:shadow-md transition-shadow overflow-hidden">
@@ -36,17 +36,14 @@ function LeadCard({ lead, onStatusChange, onBidUpdate }) {
             src={lead.satellite_image_url}
             alt="Satellite view"
             className="w-full h-full object-cover"
+            onError={() => {
+              // Fallback if image fails to load
+            }}
           />
         ) : (
-          <iframe
-            title="Satellite Map"
-            src={satelliteUrl}
-            width="100%"
-            height="100%"
-            style={{ border: 0, pointerEvents: "none" }}
-            loading="lazy"
-            className="absolute inset-0"
-          />
+          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+            <MapPin className="w-8 h-8 text-slate-600" />
+          </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/60" />
         <Badge className={`absolute top-2 right-2 ${leadStatusColors[lead.status]} border text-xs`}>
