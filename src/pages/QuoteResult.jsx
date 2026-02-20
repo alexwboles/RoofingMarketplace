@@ -86,7 +86,18 @@ export default function QuoteResult() {
             }
           },
           complexity: { type: "string" },
-          stories: { type: "number" }
+          stories: { type: "number" },
+          roof_sections: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                area_sqft: { type: "number" },
+                pitch: { type: "string" }
+              }
+            }
+          }
         }
       }
     });
