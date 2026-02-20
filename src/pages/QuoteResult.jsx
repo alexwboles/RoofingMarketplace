@@ -8,9 +8,10 @@ import MaterialsList from "@/components/quote/MaterialsList";
 import PriceEstimate from "@/components/quote/PriceEstimate";
 import MaterialTypeSelector from "@/components/quote/MaterialTypeSelector";
 import ContactForm from "@/components/quote/ContactForm";
-import SatelliteImageViewer from "@/components/quote/SatelliteImageViewer";
+import RoofAreaEditor from "@/components/quote/RoofAreaEditor";
 import RoofReport from "@/components/quote/RoofReport";
 import RooferProposals from "@/components/quote/RooferProposals";
+import PaymentTypeSelector from "@/components/quote/PaymentTypeSelector";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -27,6 +28,8 @@ export default function QuoteResult() {
   const [isSelecting, setIsSelecting] = useState(false);
   const [projectId, setProjectId] = useState(null);
   const [isComplete, setIsComplete] = useState(false);
+  const [roofSections, setRoofSections] = useState([]);
+  const [paymentType, setPaymentType] = useState("personal");
 
   const urlParams = new URLSearchParams(window.location.search);
   const quoteId = urlParams.get("id");
