@@ -31,15 +31,15 @@ function LeadCard({ lead, onStatusChange, onBidUpdate }) {
     <Card className="hover:shadow-md transition-shadow overflow-hidden">
       {/* Satellite thumbnail */}
       <div className="relative h-40 bg-slate-900 overflow-hidden">
-        {lead.satellite_image_url ? (
-          <img
-            src={lead.satellite_image_url}
-            alt="Satellite view"
-            className="w-full h-full object-cover"
-            onError={() => {
-              // Fallback if image fails to load
-            }}
-          />
+        {lead.satellite_image_url && lead.satellite_image_url.startsWith('http') ? (
+                <img
+                  src={lead.satellite_image_url}
+                  alt="Satellite view"
+                  className="w-full h-full object-cover"
+                  onError={() => {
+                    // Fallback if image fails to load
+                  }}
+                />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
             <MapPin className="w-8 h-8 text-slate-600" />
