@@ -211,11 +211,11 @@ export default function ProjectView() {
                 </CardContent>
               </Card>
             </div>
-            <MilestoneTracker milestones={project.milestones || []} isRoofer={isRoofer} onUpdateMilestone={handleUpdateMilestone} />
+            <MilestoneTracker milestones={project.milestones || []} isRoofer={isRoofer} onUpdateMilestone={handleUpdateMilestone} project={project} />
           </TabsContent>
 
           <TabsContent value="milestones">
-            <MilestoneTracker milestones={project.milestones || []} isRoofer={isRoofer} onUpdateMilestone={handleUpdateMilestone} />
+            <MilestoneTracker milestones={project.milestones || []} isRoofer={isRoofer} onUpdateMilestone={handleUpdateMilestone} project={project} />
           </TabsContent>
 
           <TabsContent value="payments">
