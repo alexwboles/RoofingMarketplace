@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import MilestoneTracker from "@/components/project/MilestoneTracker";
 import PaymentPanel from "@/components/project/PaymentPanel";
 import ProjectMessaging from "@/components/project/ProjectMessaging";
+import ReviewForm from "@/components/project/ReviewForm";
 import { toast } from "sonner";
 
 const statusColors = {
