@@ -181,6 +181,16 @@ Also calculate total materials cost, estimated labor cost (varies by complexity 
       if (quoteData.status !== "analyzing") {
         setQuote(quoteData);
         setMaterialType(quoteData.material_type || "architectural_shingle");
+        // Restore sections from saved analysis
+        const savedSections = quoteData.roof_analysis?.roof_sections;
+        if (savedSections?.length) {
+          setRoofSections(savedSections.map((s, i) => ({
+            name: s.name,
+            area_sqft: s.area_sqft,
+            color: i % 6,
+            points: generateDefaultPolygon(i, savedSections.length),
+          })));
+        }
         setIsAnalyzing(false);
         return;
       }
