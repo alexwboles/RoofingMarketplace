@@ -38,9 +38,14 @@ export default function QuoteResult() {
   const analyzeRoof = useCallback(async (quoteData) => {
     // Use AI to generate realistic roof analysis based on the address
     const analysis = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a roofing estimation AI. Given this residential address: "${quoteData.address}", generate a realistic and detailed roof analysis as if you analyzed satellite imagery. 
+      prompt: `You are a roofing estimation AI. Given this residential address: "${quoteData.address}", generate a realistic and detailed roof analysis as if you analyzed satellite imagery.
       
-      Consider typical residential homes in this area. Generate realistic measurements. Be specific and varied - don't use round numbers.
+      Consider the actual region/climate/housing stock for this address. Use Google Street View and satellite data knowledge to estimate:
+      - Number of stories: look at the address region — e.g. northeast US homes often have 2 stories, southwest ranch-style are 1 story
+      - Obstacles: use real knowledge — chimneys are common in cold climates, skylights in newer homes, HVAC vents are almost universal
+      - Complexity: bungalows = simple, hip roofs with dormers = complex
+      
+      Generate realistic measurements. Be specific — avoid round numbers.
       
       The analysis should include:
       - total_area_sqft (typical residential: 1200-3500 sq ft)
@@ -53,9 +58,10 @@ export default function QuoteResult() {
       - eave_length_ft (total eave/drip edge length)
       - rake_length_ft (total rake length)
       - valley_length_ft (total valley length)
-      - obstacles: array of {type, count} - include things like skylights, vents, pipes, chimneys, satellite dishes
+      - obstacles: array of {type, count} - include realistic items: HVAC vents (almost always present), plumbing vents, chimney if cold climate, skylights if newer home
       - complexity: "simple", "moderate", or "complex"
-      - stories: 1 or 2`,
+      - stories: 1 or 2 (based on region/address type)
+      - roof_sections: array of {name, area_sqft, pitch} breaking down the total area into individual roof planes (e.g. "Main Section", "Garage", "Dormer", "Rear Addition")`,
       response_json_schema: {
         type: "object",
         properties: {
