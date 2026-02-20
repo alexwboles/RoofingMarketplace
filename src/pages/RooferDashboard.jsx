@@ -156,12 +156,16 @@ export default function RooferDashboard() {
   const completedProjects = projects.filter((p) => ["completed", "warranty"].includes(p.status));
 
   const totalRevenue = completedProjects.reduce((s, p) => s + (p.contract_amount || 0), 0);
+  const wonLeads = leads.filter(l => ["won", "accepted"].includes(l.status)).length;
+  const conversionRate = leads.length > 0 ? Math.round((wonLeads / leads.length) * 100) : 0;
 
   const stats = [
     { label: "New Leads", value: newLeads.length, icon: FileText, color: "text-blue-600 bg-blue-50" },
     { label: "Active Projects", value: activeProjects.length, icon: Clock, color: "text-amber-600 bg-amber-50" },
     { label: "Completed", value: completedProjects.length, icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50" },
     { label: "Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-violet-600 bg-violet-50" },
+    { label: "Conversion", value: `${conversionRate}%`, icon: Percent, color: "text-rose-600 bg-rose-50" },
+    { label: "Leads Won", value: wonLeads, icon: TrendingUp, color: "text-teal-600 bg-teal-50" },
   ];
 
 
