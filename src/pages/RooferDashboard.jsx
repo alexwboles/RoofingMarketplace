@@ -167,7 +167,14 @@ export default function RooferDashboard() {
 
   const { data: leads = [], isLoading: leadsLoading } = useQuery({
     queryKey: ["leads"],
-    queryFn: () => base44.entities.Lead.list("-created_date", 100),
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      if (!user) return [];
+      const roofers = await base44.entities.Roofer.filter({ email: user.email });
+      const roofer = roofers[0];
+      if (!roofer) return [];
+      return base44.entities.Lead.filter({ roofer_id: roofer.id }, "-created_date", 100);
+    },
   });
 
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
