@@ -165,6 +165,20 @@ Also calculate total materials cost, estimated labor cost (varies by complexity 
     loadAndAnalyze();
   }, [quoteId, analyzeRoof, generateMaterialsAndPricing]);
 
+  const handleAnalysisEdit = async (updatedAnalysis) => {
+    // Regenerate pricing based on edited roof measurements
+    const pricing = await generateMaterialsAndPricing(updatedAnalysis, materialType);
+    const updates = {
+      roof_analysis: updatedAnalysis,
+      materials_list: pricing.materials,
+      materials_cost: pricing.materials_cost,
+      labor_cost: pricing.labor_cost,
+      estimated_total: pricing.estimated_total,
+    };
+    await base44.entities.RoofQuote.update(quoteId, updates);
+    setQuote((prev) => ({ ...prev, ...updates }));
+  };
+
   const handleMaterialChange = async (newType) => {
     if (!quote?.roof_analysis) return;
     setMaterialType(newType);
