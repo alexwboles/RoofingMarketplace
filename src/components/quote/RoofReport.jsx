@@ -319,6 +319,37 @@ export default function RoofReport({ analysis, onSave, aiSuggestions }) {
           </div>
         )}
 
+        {/* Difficulty Score */}
+        {!editing && analysis.difficulty_score != null && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Triangle className="w-4 h-4 text-red-500" />
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Difficulty Assessment</p>
+            </div>
+            <div className={`rounded-xl border p-3 flex items-center gap-4 ${diffColor}`}>
+              <div className="text-center shrink-0">
+                <p className="text-3xl font-extrabold">{analysis.difficulty_score}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide">/ 10</p>
+              </div>
+              <div className="flex-1">
+                <div className="w-full bg-white/60 rounded-full h-2 mb-2 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${diffScore >= 8 ? "bg-red-500" : diffScore >= 5 ? "bg-amber-500" : "bg-emerald-500"}`}
+                    style={{ width: `${(analysis.difficulty_score / 10) * 100}%` }}
+                  />
+                </div>
+                {analysis.difficulty_factors?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {analysis.difficulty_factors.map((f, i) => (
+                      <span key={i} className="text-[11px] bg-white/70 rounded-full px-2 py-0.5 border border-current/20">{f}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Summary row */}
         {!editing && (
           <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-4 text-white">
@@ -333,16 +364,16 @@ export default function RoofReport({ analysis, onSave, aiSuggestions }) {
                 <p className="text-xs text-slate-400">Pitch</p>
               </div>
               <div>
+                <p className="text-xl font-bold">{analysis.pitch_multiplier ?? "—"}</p>
+                <p className="text-xs text-slate-400">Pitch ×</p>
+              </div>
+              <div>
                 <p className="text-xl font-bold">{analysis.stories ?? 1}</p>
                 <p className="text-xs text-slate-400">Stories</p>
               </div>
               <div>
-                <p className="text-xl font-bold">{analysis.num_facets}</p>
-                <p className="text-xs text-slate-400">Facets</p>
-              </div>
-              <div>
-                <p className="text-xl font-bold">{analysis.obstacles?.length || 0}</p>
-                <p className="text-xs text-slate-400">Obstacles</p>
+                <p className="text-xl font-bold">{analysis.difficulty_score ?? "—"}</p>
+                <p className="text-xs text-slate-400">Difficulty</p>
               </div>
             </div>
           </div>
