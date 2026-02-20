@@ -15,7 +15,7 @@ const materialTypes = [
 export default function MaterialTypeSelector({ value, onChange }) {
   return (
     <div>
-      <p className="text-sm font-medium text-slate-700 mb-3">Select Material Type</p>
+      <p className="text-sm font-medium text-slate-700 mb-3">Replacement Roofing Material</p>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {materialTypes.map((mat) => (
           <button
