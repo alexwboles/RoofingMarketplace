@@ -67,42 +67,57 @@ export default function QuoteResult() {
     ].filter(Boolean).join("\n");
 
     const analysis = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a professional roofing estimation AI with expertise in satellite-based roof measurement. 
-      
-Address: "${quoteData.address}"
+      add_context_from_internet: true,
+      prompt: `You are a professional roofing estimator with 20+ years of field experience and access to satellite imagery data. Analyze this specific property and produce a highly accurate roof measurement report.
+
+Property Address: "${quoteData.address}"
 ${detailsContext ? `\nHomeowner-provided details:\n${detailsContext}` : ""}
 
-CRITICAL ACCURACY RULES for roof area estimation:
-- Roof area is ALWAYS larger than living area due to pitch multiplier and overhangs
-- A 1,200 sq ft living area home typically has 1,400–1,800 sq ft of roof area (depending on pitch)
-- A 2,000 sq ft living area home typically has 2,200–2,800 sq ft of roof area
-- Pitch multiplier: 4/12 = 1.054×, 6/12 = 1.118×, 8/12 = 1.202×, 12/12 = 1.414×
-- ${extraDetails.home_sqft ? `The homeowner states the living area is ${extraDetails.home_sqft} sq ft — use this to calculate accurate roof area with pitch multiplier + 10% for overhangs` : "Estimate based on typical housing for this region"}
-- NEVER return a total_area_sqft below 1,000 for a single-family home
+STEP 1 — RESEARCH THIS PROPERTY:
+Use your internet access to look up:
+- The actual home size / footprint from public records or real estate listings for this address
+- The typical housing style, age, and construction in this specific neighborhood/zip code
+- Local climate and weather patterns that affect roofing material choices
+- Street view / satellite knowledge of the roof style
 
-Also detect the CURRENT roof material type from satellite/street view knowledge of this address/region/era.
+STEP 2 — CALCULATE ROOF AREA ACCURATELY:
+Formula: roof_area = footprint × pitch_multiplier × 1.10 (10% for overhangs and waste)
+Pitch multipliers:
+  2/12 = 1.028 | 3/12 = 1.054 | 4/12 = 1.054 | 5/12 = 1.083
+  6/12 = 1.118 | 7/12 = 1.158 | 8/12 = 1.202 | 10/12 = 1.302 | 12/12 = 1.414
 
-Consider the actual region/climate/housing stock:
-- Northeast US: often 2 stories, 6/12–8/12 pitch, asphalt shingles, chimney common
-- Southwest: ranch style 1 story, low pitch, tile common, no chimney
-- Southeast/Gulf: hip roofs common, 4/12–6/12 pitch, wind-resistant shingles
-- Pacific Northwest: steep pitch, moss-resistant shingles
-- Midwest: gable roofs, 6/12 pitch, architectural shingles
+${extraDetails.home_sqft
+  ? `The homeowner says their living area is ${extraDetails.home_sqft} sq ft. 
+     Footprint ≈ living area (for single story) or living area / stories (for multi-story).
+     COMPUTE: footprint × pitch_multiplier × 1.10 = total_area_sqft.
+     Show your work in your reasoning before returning the number.`
+  : `Estimate the home footprint from public records or typical housing for this zip code. NEVER guess below 1,000 sq ft for a single-family home.`}
 
-Generate realistic measurements for the roof sections — each section_sqft must sum to approximately total_area_sqft.
+STEP 3 — IDENTIFY CURRENT ROOF MATERIAL:
+Look up satellite/street view data for this address. Common indicators:
+- Dark 3-tab or architectural shingles (most US homes pre-2010)
+- Standing seam metal (newer construction, NW US, Appalachian regions)  
+- Clay/concrete tile (Southwest US, Florida, California)
+- Slate (Northeast US, older homes pre-1950)
+
+STEP 4 — GENERATE ACCURATE MEASUREMENTS:
+All linear measurements must be geometrically consistent with total_area_sqft.
+- ridge_length ≈ longest horizontal span of roof
+- eave_length ≈ perimeter of roof at base  
+- valleys only present if complexity is moderate/complex
 
 Return:
-- total_area_sqft (calculated correctly using pitch multiplier, NEVER less than 1000)
-- pitch (e.g. "4/12", "6/12", "8/12")
-- num_facets, num_peaks, num_valleys, num_hips
+- total_area_sqft (MUST match your Step 2 calculation exactly)
+- pitch (e.g. "6/12")
+- num_facets (2 for simple gable, 4+ for hip/complex)
+- num_peaks, num_valleys, num_hips
 - ridge_length_ft, eave_length_ft, rake_length_ft, valley_length_ft
-- obstacles: [{type, count}] — HVAC vents always present, plumbing vents, chimney if cold climate
-- complexity: "simple", "moderate", or "complex"
+- obstacles: [{type, count}] — always include HVAC vents (1-3), plumbing vents (2-4); add chimney if Northeast/Midwest pre-1980
+- complexity: "simple" (gable), "moderate" (hip/L-shape), or "complex" (multiple dormers/valleys)
 - stories: 1 or 2
-- current_material: detected current roof material (e.g. "asphalt_shingle", "metal", "tile_clay", "tile_concrete", "slate", "wood_shake")
-- current_material_label: human-readable label (e.g. "Asphalt Shingle", "Metal Roof", "Clay Tile")
-- roof_sections: array of {name, area_sqft, pitch} — sections must sum to total_area_sqft
-- ai_suggestions: array of 2–3 upgrade suggestions tailored to this property/location (e.g. "Given your climate, consider impact-resistant shingles for hail protection")`,
+- current_material + current_material_label
+- roof_sections: [{name, area_sqft, pitch}] — sections MUST sum exactly to total_area_sqft
+- ai_suggestions: 2-3 highly specific upgrade tips for this exact property/climate`,
       response_json_schema: {
         type: "object",
         properties: {
