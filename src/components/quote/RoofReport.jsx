@@ -273,7 +273,7 @@ export default function RoofReport({ analysis, onSave }) {
         {!editing && (
           <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-4 text-white">
             <p className="text-xs text-slate-400 mb-2 uppercase tracking-wider">Report Summary</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center">
               <div>
                 <p className="text-xl font-bold">{(analysis.total_area_sqft || 0).toLocaleString()}</p>
                 <p className="text-xs text-slate-400">Total sq ft</p>
@@ -283,12 +283,16 @@ export default function RoofReport({ analysis, onSave }) {
                 <p className="text-xs text-slate-400">Pitch</p>
               </div>
               <div>
+                <p className="text-xl font-bold">{analysis.stories ?? 1}</p>
+                <p className="text-xs text-slate-400">Stories</p>
+              </div>
+              <div>
                 <p className="text-xl font-bold">{analysis.num_facets}</p>
                 <p className="text-xs text-slate-400">Facets</p>
               </div>
               <div>
                 <p className="text-xl font-bold">{analysis.obstacles?.length || 0}</p>
-                <p className="text-xs text-slate-400">Obstacle types</p>
+                <p className="text-xs text-slate-400">Obstacles</p>
               </div>
             </div>
           </div>
