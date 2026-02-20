@@ -15,7 +15,6 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import DynamicPricingEngine from "@/components/roofer/DynamicPricingEngine";
 import AppointmentManager from "@/components/appointments/AppointmentManager";
 import ServiceAreaEditor from "@/components/roofer/ServiceAreaEditor";
 import ConversionRateChart from "@/components/analytics/ConversionRateChart";
