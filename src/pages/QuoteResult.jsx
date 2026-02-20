@@ -269,6 +269,8 @@ Calculate:
       materials_cost: pricing.materials_cost,
       labor_cost: pricing.labor_cost,
       estimated_total: pricing.estimated_total,
+      price_range_low: pricing.price_range_low,
+      price_range_high: pricing.price_range_high,
     };
     await base44.entities.RoofQuote.update(quoteId, updates);
     setQuote((prev) => ({ ...prev, ...updates }));
