@@ -255,6 +255,16 @@ export default function ProjectView() {
             </TabsContent>
           )}
 
+          <TabsContent value="photos">
+            <PhotoGallery
+              project={project}
+              isRoofer={isRoofer}
+              onUpdate={async (updates) => {
+                await save(updates);
+              }}
+            />
+          </TabsContent>
+
           {/* Review tab — homeowner only, on completed projects */}
           {!isRoofer && (project.status === "completed" || project.status === "warranty") && (
             <TabsContent value="review">
