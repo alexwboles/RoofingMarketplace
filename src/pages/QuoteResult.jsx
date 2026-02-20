@@ -128,6 +128,9 @@ Return:
           },
           complexity: { type: "string" },
           stories: { type: "number" },
+          current_material: { type: "string" },
+          current_material_label: { type: "string" },
+          ai_suggestions: { type: "array", items: { type: "string" } },
           roof_sections: {
             type: "array",
             items: {
