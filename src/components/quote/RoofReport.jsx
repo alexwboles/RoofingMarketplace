@@ -18,7 +18,7 @@ const getComplexityColor = (c) => {
   return "bg-amber-50 text-amber-700 border-amber-200";
 };
 
-export default function RoofReport({ analysis, onSave }) {
+export default function RoofReport({ analysis, onSave, aiSuggestions }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(analysis);
 
