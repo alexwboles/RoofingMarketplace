@@ -52,24 +52,13 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
   const svgRef = useRef(null);
   const [editing, setEditing] = useState(false);
   const [localSections, setLocalSections] = useState(sections || []);
-  const [activeSec, setActiveSec] = useState(null); // index
-  const [dragging, setDragging] = useState(null);   // { secIdx, ptIdx }
-  const [placing, setPlacing] = useState(false);    // drawing new polygon
+  const [activeSec, setActiveSec] = useState(null);
+  const [dragging, setDragging] = useState(null); // { secIdx, ptIdx }
 
-  // px-per-sqft scale — rough heuristic for display
   const CANVAS_W = 640;
   const CANVAS_H = 360;
-  const PX_PER_SQFT = 0.12; // 1 sqft ≈ 0.12 canvas px² at zoom 20
-
-  const pxToSqft = useCallback((pxArea) => Math.round(pxArea / PX_PER_SQFT), []);
-
-  // Recalculate sqft whenever points change
-  const recalc = (secs) => {
-    return secs.map((s) => ({
-      ...s,
-      area_sqft: pxToSqft(polygonArea(s.points || [])),
-    }));
-  };
+  // Scale: each section stores its real sqft — we scale polygons to match
+  // We display polygons sized proportionally; area_sqft is the source of truth
 
   useEffect(() => {
     setLocalSections(sections || []);
@@ -83,36 +72,35 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
     };
   };
 
-  const handleSVGClick = (e) => {
-    if (!editing || dragging || !placing) return;
-    const pt = getSVGPoint(e);
-    setLocalSections((prev) => {
-      const updated = [...prev];
-      const sec = updated[activeSec];
-      sec.points = [...(sec.points || []), pt];
-      return recalc(updated);
-    });
+  const pxAreaToSqft = (pxArea, originalSqft, originalPxArea) => {
+    if (!originalPxArea) return originalSqft;
+    return Math.round((pxArea / originalPxArea) * originalSqft);
   };
 
   const handleMouseDown = (secIdx, ptIdx, e) => {
     if (!editing) return;
     e.stopPropagation();
+    e.preventDefault();
     setDragging({ secIdx, ptIdx });
     setActiveSec(secIdx);
-    setPlacing(false);
   };
 
   const handleMouseMove = useCallback((e) => {
-    if (!dragging) return;
+    if (!dragging || !svgRef.current) return;
+    e.preventDefault();
     const pt = getSVGPoint(e);
     setLocalSections((prev) => {
-      const updated = prev.map((s, si) => {
+      return prev.map((s, si) => {
         if (si !== dragging.secIdx) return s;
-        const points = [...s.points];
-        points[dragging.ptIdx] = pt;
-        return { ...s, points };
+        const points = s.points.map((p, pi) => pi === dragging.ptIdx ? pt : p);
+        const newPxArea = polygonArea(points);
+        const origPxArea = polygonArea(s.points);
+        return {
+          ...s,
+          points,
+          area_sqft: pxAreaToSqft(newPxArea, s.area_sqft, origPxArea),
+        };
       });
-      return recalc(updated);
     });
   }, [dragging]);
 
