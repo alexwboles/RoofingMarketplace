@@ -364,41 +364,6 @@ export default function RoofReport({ analysis, onSave, aiSuggestions }) {
           )}
         </div>
 
-        {/* Condition & Remaining Life */}
-        {!editing && (analysis.condition_notes || analysis.estimated_remaining_life_years) && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Current Roof Condition</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {analysis.estimated_remaining_life_years != null && (
-                <div className={`rounded-xl border p-3 flex items-center gap-3 ${
-                  analysis.estimated_remaining_life_years <= 3 ? "bg-red-50 border-red-200"
-                  : analysis.estimated_remaining_life_years <= 7 ? "bg-amber-50 border-amber-200"
-                  : "bg-emerald-50 border-emerald-200"
-                }`}>
-                  <Clock className={`w-5 h-5 shrink-0 ${
-                    analysis.estimated_remaining_life_years <= 3 ? "text-red-500"
-                    : analysis.estimated_remaining_life_years <= 7 ? "text-amber-500"
-                    : "text-emerald-500"
-                  }`} />
-                  <div>
-                    <p className="text-xs text-slate-500">Est. Remaining Life</p>
-                    <p className="text-base font-bold text-slate-800">~{analysis.estimated_remaining_life_years} years</p>
-                  </div>
-                </div>
-              )}
-              {analysis.condition_notes && (
-                <div className="bg-slate-50 rounded-xl border border-slate-200 p-3">
-                  <p className="text-xs text-slate-400 mb-1">Observed Condition</p>
-                  <p className="text-sm text-slate-700">{analysis.condition_notes}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Roof Sections / Facets Breakdown */}
         {!editing && analysis.roof_sections?.length > 0 && (
           <FacetsBreakdown analysis={analysis} />
