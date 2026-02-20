@@ -136,12 +136,9 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900/95 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <Satellite className="w-4 h-4 text-amber-400" />
-          <span className="text-sm font-semibold text-white">Satellite View</span>
-          {totalSqft > 0 && (
-            <span className="text-xs text-slate-400 ml-1">· {totalSqft.toLocaleString()} ft² detected</span>
-          )}
-        </div>
+           <Satellite className="w-4 h-4 text-amber-400" />
+           <span className="text-sm font-semibold text-white">Satellite View</span>
+         </div>
         <div className="flex items-center gap-2">
           {editing ? (
             <>
@@ -278,11 +275,6 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
       )}
 
       {/* View mode — compact summary below map */}
-      {!editing && localSections.length > 0 && (
-       <div className="px-4 py-2.5 bg-slate-800/95 text-xs text-slate-300">
-         Total Roof Area: <span className="font-bold text-white">{totalSqft.toLocaleString()} ft²</span>
-       </div>
-      )}
     </div>
   );
 }

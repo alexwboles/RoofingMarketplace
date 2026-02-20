@@ -144,117 +144,62 @@ export default function QuoteResult() {
 
     const analysis = await base44.integrations.Core.InvokeLLM({
       add_context_from_internet: true,
-      prompt: `You are a professional roofing estimator with 20+ years of field experience. You have access to satellite imagery and public property records. Analyze this SPECIFIC property and produce a highly accurate, detailed roof measurement and condition report.
+      prompt: `You are an expert roofing estimator with extensive field experience. Analyze this property and provide precise roof measurements for cost estimation. ACCURACY IS CRITICAL - errors here directly impact the customer quote.
 
 Property Address: "${quoteData.address}"
 Satellite/aerial view: ${satelliteUrl}
 ${detailsContext ? `\nHomeowner-provided details:\n${detailsContext}` : ""}
 
-CRITICAL INSTRUCTIONS — READ CAREFULLY:
-You MUST use your internet access to look up this exact address. Do NOT make up generic numbers. Every measurement must be grounded in real data.
+CRITICAL: Use internet access to find real property data. Search county records, Zillow, Redfin, assessor databases for:
+- Square footage of living area
+- Number of stories
+- Lot size and building footprint
+- Year built and any recent permits
 
-STEP 1 — DEEP PROPERTY RESEARCH:
-Search for this address specifically:
-- Pull public records: county assessor, Zillow, Redfin, Google Maps, Bing Maps satellite view
-- Find: year built, living area (sq ft), lot size, number of stories, building footprint
-- Look at satellite imagery to identify: roof shape (gable/hip/gambrel/flat/mansard), number of distinct roof planes, visible penetrations
-- Research local weather: snowload, wind zone, hurricane risk, hail frequency — all affect material recommendations
-- If it's a subdivision, research the typical home model for that neighborhood/era
+ROOF AREA CALCULATION (MUST be accurate):
+1. Find the actual living area sq ft from public records (NOT a rough estimate)
+2. Divide by number of stories to get roof footprint
+3. Add typical overhang (18-24 inches on all sides = perimeter × 1.5-2 feet)
+4. Apply pitch multiplier from this table based on satellite inspection:
+   - 3/12: ×1.054 | 4/12: ×1.068 | 5/12: ×1.083 | 6/12: ×1.118 | 7/12: ×1.158 | 8/12: ×1.202
+5. Apply waste factor: simple gable=1.08, 2-4 slopes=1.12, complex 5+=1.15
 
-STEP 2 — PRECISE ROOF AREA CALCULATION (show your work in detail):
-Use the actual footprint from records. NEVER estimate below 900 sq ft for a single-family home.
+Example: 2,000 sq ft home, 1 story, 6/12 pitch, 24" overhang, 2-slope gable
+- Footprint: 2,000 sq ft
+- Perimeter-based overhang: ~200ft perimeter × 2ft = 400 sq ft
+- Gross: 2,400 sq ft
+- With pitch ×1.118: 2,683 sq ft
+- With waste ×1.12: ~3,005 sq ft total
+(NOT less than 2,500 sq ft for this scenario)
 
-Pitch multipliers (MUST use exact values):
-  2/12=1.028 | 3/12=1.054 | 4/12=1.068 | 5/12=1.083 | 6/12=1.118 | 7/12=1.158 | 8/12=1.202 | 9/12=1.250 | 10/12=1.302 | 12/12=1.414
+BREAKING DOWN INTO SECTIONS:
+Identify distinct roof planes from the satellite image (front slope, back slope, hips, etc). Each section must be realistic (>150 sq ft minimum to avoid fragmentation). Sections must sum to your calculated total.
 
-PITCH DETECTION RULES:
-- 0-2/12 = FLAT roof (appears nearly horizontal, rare in residential)
-- 2-4/12 = LOW PITCH (subtle slope, common on modern homes, multiplier ~1.05-1.07)
-- 4-6/12 = MODERATE PITCH (visible clear slope, most common, multiplier ~1.07-1.12)
-- 6-8/12 = STEEP (noticeable steepness, older homes often have this, multiplier ~1.12-1.20)
-- 8-12/12 = VERY STEEP (dramatic slope, mountainous areas, multiplier ~1.20-1.41)
+VALIDATION RULES:
+- Minimum 900 sq ft for any home (NEVER go lower)
+- For 1,500-2,500 sq ft homes, expect 1,800-3,500 sq ft roof area
+- For 2,500-4,000 sq ft homes, expect 3,500-6,000 sq ft roof area
+- If your calculation seems too low, increase pitch estimate or verify living area is not just ground floor
 
-Look at satellite angles to determine pitch:
-- If roof planes appear nearly flat with minimal shadows: 2-4/12
-- If slope is obvious but not dramatic: 5-7/12
-- If slope is very pronounced with strong shadows: 8-12/12
-
-Area calculation formula:
-1. footprint_sqft = living_area / stories (or from assessor records)
-2. perimeter_ft = (living_area / avg_room_depth) × 1.2 (estimate or from records)
-3. overhang_area = perimeter × (overhang_inches/12) — typical overhang is 18-24 inches
-4. gross_deck = footprint_sqft + overhang_area
-5. sloped_area = gross_deck × pitch_multiplier (use exact table values)
-6. total_area_sqft = sloped_area × waste_factor
-   - simple shape (single slope/gable): waste = 1.08
-   - moderate shape (2-4 slopes/hips): waste = 1.12
-   - complex shape (5+ slopes/valleys/intricate): waste = 1.15
-
-${extraDetails.home_sqft
-  ? `Homeowner confirmed living area = ${extraDetails.home_sqft} sq ft. Use this as your footprint base.`
-  : `Use public records for footprint. Cross-check with Zillow/assessor data. For a typical 1-2 story home, estimate perimeter at 150-200 ft.`}
-
-Show calculation steps: "Footprint: X sq ft, Perimeter: Y ft, Overhang area: Z sq ft, Gross: W sq ft, Sloped (×1.118): V sq ft, Final (×1.12 waste): TOTAL sq ft"
-
-STEP 3 — SATELLITE VISUAL INSPECTION:
-Examine the satellite image CAREFULLY. Only count penetrations you can ACTUALLY SEE:
-- Chimneys: visible as brick/tan rectangles or metal caps (count only clear visible chimneys)
-- Plumbing vent pipes: small round protrusions 3-6" diameter (must be clearly visible, not shadows)
-- Skylights: rectangular glass or metal framed panels (usually lighter colored, count only obvious ones)
-- HVAC units/curbs: larger rectangular boxes on roof, often tan/gray
-- Solar panels: rectangular ordered arrays of cells (obvious if present)
-- Ridge vents: continuous metal cap running along ridge line
-- Turtle/box vents: small raised rectangular vents along roof (count actual visible ones, not assumed)
-- Satellite dishes: very obvious round dishes
-- Trees overhanging: adjacent tall trees that extend over roof edge
-
-CRITICAL: Do NOT assume penetrations. Only count items CLEARLY VISIBLE in satellite imagery. If uncertain, don't include it.
-
-STEP 4 — ROOF CONDITION ASSESSMENT:
-From satellite and any available street view data, assess:
-- Color uniformity (patchy = aging/storm damage)
-- Moss/algae/lichen (dark streaking, especially north-facing slopes)
-- Missing or lifted shingles (visible gaps or raised edges)
-- Sagging or uneven ridgeline
-- Flashing condition around penetrations
-- Gutters/fascia condition
-- Estimate age if not from records
-
-STEP 5 — DIFFICULTY SCORE (1–10):
-Factor in:
-- Pitch: ≤3/12=easy(+0), 4–6/12=moderate(+2), 7–9/12=steep(+4), ≥10/12=very steep(+6)
-- Stories: 1=+0, 2=+2, 3+=+4
-- Complexity: simple=+0, moderate=+2, complex=+4
-- Obstacles (only counted ones, per 5): +1 each group
-- Poor access (trees/tight lot): +1–2
-
-STEP 6 — PER-SECTION BREAKDOWN:
-roof_sections MUST:
-- Sum exactly to total_area_sqft (within 1-2% rounding tolerance)
-- Use compass/directional names: "Front (South) Slope", "Back (North) Slope", "Left (West) Hip", "Right (East) Hip", "Garage Roof", etc.
-- Include individual pitch per section if different slopes are visible
-- Each section area = (section_footprint × pitch_multiplier × 1.12)
-
-CRITICAL VALIDATION:
-- total_area_sqft MUST be at least 900 for any single-family home
-- For a 1,500 sq ft living area with 6/12 pitch: ~1,500 × 1.118 × 1.12 ≈ 1,878 sq ft minimum
-- For a 2,000 sq ft living area with 6/12 pitch: ~2,000 × 1.118 × 1.12 ≈ 2,500 sq ft
-- For a 2,500 sq ft living area with 7/12 pitch: ~2,500 × 1.158 × 1.12 ≈ 3,235 sq ft
-- NEVER return total_area_sqft less than 900. If calculation seems too low, recalculate with accurate records.
-
-Return ALL of the following fields with real, researched values:
-- total_area_sqft (number — MINIMUM 900, typically 1,800–4,000 for residential, shown with calculation details)
-- pitch (string, e.g. "6/12"), pitch_multiplier (number), overhang_inches (number, default 18), waste_factor (number, default 1.12)
-- difficulty_score (1–10), difficulty_factors (detailed string array)
-- num_facets (number), num_peaks (number), num_valleys (number), num_hips (number)
-- ridge_length_ft (number), eave_length_ft (number), rake_length_ft (number), valley_length_ft (number)
-- obstacles: [{type, count}] — ONLY list clearly visible penetrations in satellite imagery; prefer empty array over assumed items
-- condition_notes (detailed string — describe what you see on the satellite image)
-- estimated_remaining_life_years (number)
+Return ONLY the following fields (all required):
+- total_area_sqft (verified minimum 900)
+- pitch (e.g. "6/12")
+- pitch_multiplier (exact number)
+- overhang_inches (default 18, increase if visible in satellite)
+- waste_factor (1.08-1.15 based on complexity)
+- difficulty_score (1-10)
+- difficulty_factors (array of strings explaining score)
+- num_facets, num_peaks, num_valleys, num_hips (from satellite observation)
+- ridge_length_ft, eave_length_ft, rake_length_ft, valley_length_ft
+- obstacles (array of visible items only: chimneys, vents, etc)
+- condition_notes (what you see on the satellite)
+- estimated_remaining_life_years
 - complexity ("simple"|"moderate"|"complex")
-- stories (number), current_material (string), current_material_label (string)
-- roof_sections: [{name, area_sqft, pitch}] — sections must sum to total_area_sqft within 1% tolerance
-- ai_suggestions: 3 specific, actionable tips for THIS property/climate (not generic advice)`,
+- stories (number)
+- current_material (string)
+- current_material_label (string)
+- roof_sections (array with name, area_sqft, pitch - MUST sum to total_area_sqft)
+- ai_suggestions (3 actionable tips specific to THIS property)`,
       response_json_schema: {
         type: "object",
         properties: {
