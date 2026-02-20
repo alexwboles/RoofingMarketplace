@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Pencil, Save, X, Plus, Trash2,
   Ruler, Triangle, Layers, Mountain, ArrowUpDown,
-  Home, Navigation, Wind, Zap
+  Home, Navigation, Wind, Zap, Clock, AlertTriangle, ChevronDown, ChevronUp
 } from "lucide-react";
 import { toast } from "sonner";
 
