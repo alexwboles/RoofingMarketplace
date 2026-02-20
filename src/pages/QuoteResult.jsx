@@ -521,26 +521,17 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
                 </div>
               )}
 
-              {/* Material Selector */}
+              {/* Roof Report (editable) — with AI suggestions inside */}
+              <RoofReport
+                analysis={quote.roof_analysis}
+                onSave={handleAnalysisEdit}
+                aiSuggestions={quote.roof_analysis?.ai_suggestions}
+              />
+
+              {/* Replacement Roofing Material */}
               <div className="bg-white rounded-2xl border border-slate-200 p-6">
                 <MaterialTypeSelector value={materialType} onChange={handleMaterialChange} />
               </div>
-
-              {/* AI Suggestions */}
-              {quote.roof_analysis?.ai_suggestions?.length > 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2">
-                  <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">AI Recommendations for Your Property</p>
-                  {quote.roof_analysis.ai_suggestions.map((s, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <span className="text-amber-500 mt-0.5">✦</span>
-                      <p className="text-sm text-amber-900">{s}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Roof Report (editable) */}
-              <RoofReport analysis={quote.roof_analysis} onSave={handleAnalysisEdit} />
 
               {/* Materials List */}
               <MaterialsList materials={quote.materials_list} />
