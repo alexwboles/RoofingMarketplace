@@ -121,20 +121,13 @@ function LeadCard({ lead, onStatusChange, onBidUpdate }) {
           {lead.created_date && format(new Date(lead.created_date), "MMM d, yyyy 'at' h:mm a")}
         </p>
 
-        <button
-          onClick={() => setShowPricing(v => !v)}
-          className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs text-violet-600 hover:text-violet-800 bg-violet-50 hover:bg-violet-100 rounded-lg py-1.5 transition-colors"
+        <Button
+          onClick={() => navigate(createPageUrl("BidSubmission") + `?leadId=${lead.id}`)}
+          className="w-full mt-3 bg-violet-600 hover:bg-violet-700 text-white text-xs h-8"
         >
-          <TrendingUp className="w-3.5 h-3.5" />
-          Pricing Engine
-          {showPricing ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-        </button>
-
-        {showPricing && (
-          <div className="mt-3">
-            <DynamicPricingEngine lead={lead} roofer={null} onBidUpdate={onBidUpdate} />
-          </div>
-        )}
+          <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
+          Submit Bid
+        </Button>
       </CardContent>
     </Card>
   );
