@@ -276,6 +276,69 @@ export default function RooferDashboard() {
                 {!completedProjects.length && <p className="text-sm text-slate-400 col-span-2 text-center py-12">No completed projects yet.</p>}
               </div>
             </TabsContent>
+
+            <TabsContent value="appointments">
+              <AppointmentManager rooferId="dashboard" rooferCompany="My Company" />
+            </TabsContent>
+
+            <TabsContent value="analytics">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-2xl border border-slate-200 p-5">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Lead Pipeline</p>
+                  <div className="space-y-3">
+                    {[
+                      { label: "New", count: newLeads.length, color: "bg-blue-400" },
+                      { label: "Active", count: activeLeads.length, color: "bg-amber-400" },
+                      { label: "Won", count: wonLeads, color: "bg-emerald-400" },
+                      { label: "Lost", count: leads.filter(l => l.status === "lost").length, color: "bg-red-300" },
+                    ].map((item) => (
+                      <div key={item.label} className="flex items-center gap-3">
+                        <span className="text-xs text-slate-500 w-14">{item.label}</span>
+                        <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                          <div className={`h-full rounded-full ${item.color}`} style={{ width: leads.length ? `${(item.count / leads.length) * 100}%` : "0%" }} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700 w-6 text-right">{item.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between text-sm">
+                    <span className="text-slate-400">Conversion Rate</span>
+                    <span className="font-bold text-slate-800">{conversionRate}%</span>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 p-5">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Revenue Summary</p>
+                  <div className="space-y-3">
+                    {[
+                      { label: "Total Contracted", value: `$${leads.reduce((s, l) => s + (l.roofer_bid || l.estimated_total || 0), 0).toLocaleString()}` },
+                      { label: "Won Revenue", value: `$${totalRevenue.toLocaleString()}` },
+                      { label: "Avg Project Size", value: completedProjects.length ? `$${Math.round(totalRevenue / completedProjects.length).toLocaleString()}` : "—" },
+                    ].map((r) => (
+                      <div key={r.label} className="flex justify-between py-2 border-b border-slate-50 last:border-0">
+                        <span className="text-sm text-slate-500">{r.label}</span>
+                        <span className="text-sm font-bold text-slate-800">{r.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 p-5 md:col-span-2">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Project Status Breakdown</p>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                    {["scheduled","materials_ordered","in_progress","inspection","completed","warranty"].map(status => {
+                      const count = projects.filter(p => p.status === status).length;
+                      return (
+                        <div key={status} className="text-center bg-slate-50 rounded-xl p-3">
+                          <p className="text-xl font-bold text-slate-800">{count}</p>
+                          <p className="text-[10px] text-slate-400 capitalize mt-0.5">{status.replace(/_/g, " ")}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
         )}
       </div>
