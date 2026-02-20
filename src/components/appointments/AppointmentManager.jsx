@@ -127,6 +127,10 @@ export default function AppointmentManager({ rooferId, rooferCompany }) {
         </TabsTrigger>
       </TabsList>
 
+      <TabsContent value="calendar">
+        <CalendarView appointments={appointments} />
+      </TabsContent>
+
       <TabsContent value="upcoming">
         {isLoading ? <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-slate-300" /></div> : (
           <div className="space-y-3">
