@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft, Building2, User, Mail, Phone, FileText,
-  MapPin, Loader2, CheckCircle2, Hammer
+  MapPin, Loader2, CheckCircle2, Hammer, ShieldCheck, ShieldAlert, Sparkles,
+  TrendingUp, AlertCircle
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 export default function RooferSignup() {
