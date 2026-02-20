@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   MapPin, Phone, Mail, DollarSign, Clock,
   CheckCircle2, UserCheck, FileText, Loader2, FolderOpen, ArrowRight, TrendingUp, ChevronDown, ChevronUp,
-  Star, Calendar, BarChart2, Percent
+  Star, Calendar, BarChart2, Percent, Satellite
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
