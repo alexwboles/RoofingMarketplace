@@ -63,8 +63,7 @@ export default function BidCustomForm({ lead, onBack, onSuccess }) {
     submitBidMutation.mutate(formData);
   };
 
-  const totalBid =
-    (parseFloat(formData.bid_amount) || 0);
+  const totalBid = parseFloat(formData.bid_amount) || 0;
   const materialsAndLabor =
     (parseFloat(formData.materials_cost) || 0) + (parseFloat(formData.labor_cost) || 0);
   const markup = totalBid - materialsAndLabor;
