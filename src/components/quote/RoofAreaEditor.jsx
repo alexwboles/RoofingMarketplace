@@ -140,13 +140,12 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
     const total = localSections.reduce((s, sec) => s + (sec.area_sqft || 0), 0);
     onSectionsChange(localSections, total);
     setEditing(false);
-    setPlacing(false);
+    setActiveSec(null);
   };
 
   const handleCancel = () => {
     setLocalSections(sections || []);
     setEditing(false);
-    setPlacing(false);
     setActiveSec(null);
   };
 
