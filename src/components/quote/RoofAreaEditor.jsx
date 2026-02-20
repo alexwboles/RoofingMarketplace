@@ -3,78 +3,72 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Satellite, Pencil, Save, X, Plus, Trash2, Info, RotateCcw } from "lucide-react";
+import { Satellite, Pencil, Save, X, Plus, Trash2, Info } from "lucide-react";
 
 const COLORS = [
-  { fill: "rgba(59,130,246,0.25)", stroke: "#3b82f6", label: "Section" },
-  { fill: "rgba(234,179,8,0.25)", stroke: "#eab308", label: "Section" },
-  { fill: "rgba(34,197,94,0.25)", stroke: "#22c55e", label: "Section" },
-  { fill: "rgba(239,68,68,0.25)", stroke: "#ef4444", label: "Section" },
-  { fill: "rgba(168,85,247,0.25)", stroke: "#a855f7", label: "Section" },
-  { fill: "rgba(249,115,22,0.25)", stroke: "#f97316", label: "Section" },
+  { fill: "rgba(59,130,246,0.3)", stroke: "#3b82f6" },
+  { fill: "rgba(234,179,8,0.3)", stroke: "#eab308" },
+  { fill: "rgba(34,197,94,0.3)", stroke: "#22c55e" },
+  { fill: "rgba(239,68,68,0.3)", stroke: "#ef4444" },
+  { fill: "rgba(168,85,247,0.3)", stroke: "#a855f7" },
+  { fill: "rgba(249,115,22,0.3)", stroke: "#f97316" },
 ];
 
-function polygonArea(pts) {
-  // Shoelace formula — returns area in canvas px²
-  let area = 0;
-  const n = pts.length;
-  for (let i = 0; i < n; i++) {
-    const j = (i + 1) % n;
-    area += pts[i].x * pts[j].y;
-    area -= pts[j].x * pts[i].y;
-  }
-  return Math.abs(area) / 2;
-}
+const CANVAS_W = 640;
+const CANVAS_H = 360;
 
-function Polygon({ pts, color, selected, onSelect }) {
-  if (pts.length < 2) return null;
-  const points = pts.map((p) => `${p.x},${p.y}`).join(" ");
-  return (
-    <g onClick={onSelect} style={{ cursor: "pointer" }}>
-      <polygon
-        points={points}
-        fill={color.fill}
-        stroke={color.stroke}
-        strokeWidth={selected ? 2.5 : 1.5}
-      />
-      {selected && pts.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r={6}
-          fill={color.stroke}
-          stroke="white"
-          strokeWidth={2}
-        />
-      ))}
-    </g>
-  );
+/**
+ * Generate a centered polygon for section i of total sections.
+ * All sections are placed in the center of the satellite view,
+ * tiled horizontally so they overlap the likely roof area.
+ */
+function makeCenteredPolygon(i, total) {
+  const cols = Math.min(total, 2);
+  const rows = Math.ceil(total / cols);
+  const blockW = Math.min(220, CANVAS_W * 0.6 / cols);
+  const blockH = Math.min(140, CANVAS_H * 0.55 / rows);
+  const col = i % cols;
+  const row = Math.floor(i / cols);
+  // Center the whole grid in the canvas
+  const gridW = cols * blockW + (cols - 1) * 8;
+  const gridH = rows * blockH + (rows - 1) * 8;
+  const startX = (CANVAS_W - gridW) / 2;
+  const startY = (CANVAS_H - gridH) / 2;
+  const x1 = startX + col * (blockW + 8);
+  const y1 = startY + row * (blockH + 8);
+  return [
+    { x: x1, y: y1 },
+    { x: x1 + blockW, y: y1 },
+    { x: x1 + blockW, y: y1 + blockH },
+    { x: x1, y: y1 + blockH },
+  ];
 }
 
 export default function RoofAreaEditor({ address, sections, onSectionsChange }) {
   const svgRef = useRef(null);
   const [editing, setEditing] = useState(false);
-  const [localSections, setLocalSections] = useState(sections || []);
+  const [localSections, setLocalSections] = useState([]);
   const [activeSec, setActiveSec] = useState(null);
-  const [dragging, setDragging] = useState(null); // { secIdx, ptIdx }
+  const [dragging, setDragging] = useState(null);
 
-  const CANVAS_W = 640;
-  const CANVAS_H = 360;
-  // Scale: each section stores its real sqft — we scale polygons to match
-  // We display polygons sized proportionally; area_sqft is the source of truth
-
+  // Sync from parent — ensure polygons are always centered
   useEffect(() => {
-    setLocalSections(sections || []);
+    if (!sections?.length) { setLocalSections([]); return; }
+    setLocalSections(
+      sections.map((s, i) => ({
+        ...s,
+        // Only generate polygon if not already stored
+        points: s.points?.length >= 3 ? s.points : makeCenteredPolygon(i, sections.length),
+      }))
+    );
   }, [sections]);
 
   const getSVGPoint = (e) => {
     const rect = svgRef.current.getBoundingClientRect();
     return {
-      x: ((e.clientX - rect.left) / rect.width) * CANVAS_W,
-      y: ((e.clientY - rect.top) / rect.height) * CANVAS_H,
+      x: Math.max(0, Math.min(CANVAS_W, ((e.clientX - rect.left) / rect.width) * CANVAS_W)),
+      y: Math.max(0, Math.min(CANVAS_H, ((e.clientY - rect.top) / rect.height) * CANVAS_H)),
     };
-  };
-
-  const pxAreaToSqft = (pxArea, originalSqft, originalPxArea) => {
-    if (!originalPxArea) return originalSqft;
-    return Math.round((pxArea / originalPxArea) * originalSqft);
   };
 
   const handleMouseDown = (secIdx, ptIdx, e) => {
@@ -89,39 +83,32 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
     if (!dragging || !svgRef.current) return;
     e.preventDefault();
     const pt = getSVGPoint(e);
-    setLocalSections((prev) => {
-      return prev.map((s, si) => {
+    setLocalSections((prev) =>
+      prev.map((s, si) => {
         if (si !== dragging.secIdx) return s;
-        const points = s.points.map((p, pi) => pi === dragging.ptIdx ? pt : p);
-        const newPxArea = polygonArea(points);
-        const origPxArea = polygonArea(s.points);
-        return {
-          ...s,
-          points,
-          area_sqft: pxAreaToSqft(newPxArea, s.area_sqft, origPxArea),
-        };
-      });
-    });
+        const points = s.points.map((p, pi) => (pi === dragging.ptIdx ? pt : p));
+        return { ...s, points };
+      })
+    );
   }, [dragging]);
 
   const handleMouseUp = useCallback(() => setDragging(null), []);
 
   const addSection = () => {
     const idx = localSections.length;
-    const cx = 80 + (idx % 3) * 160;
-    const cy = 80 + Math.floor(idx / 3) * 120;
+    const total = idx + 1;
+    // Recalculate all polygons centered for new count
     const newSec = {
-      name: `Section ${idx + 1}`,
-      points: [
-        { x: cx, y: cy },
-        { x: cx + 120, y: cy },
-        { x: cx + 120, y: cy + 90 },
-        { x: cx, y: cy + 90 },
-      ],
-      area_sqft: 800,
+      name: `Section ${total}`,
+      area_sqft: 300,
       color: idx % COLORS.length,
+      points: makeCenteredPolygon(idx, total),
     };
-    const updated = [...localSections, newSec];
+    // Reposition existing sections too
+    const updated = [
+      ...localSections.map((s, i) => ({ ...s, points: makeCenteredPolygon(i, total) })),
+      newSec,
+    ];
     setLocalSections(updated);
     setActiveSec(updated.length - 1);
   };
@@ -133,7 +120,14 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
   };
 
   const renameSection = (i, name) => {
-    setLocalSections((prev) => prev.map((s, idx) => idx === i ? { ...s, name } : s));
+    setLocalSections((prev) => prev.map((s, idx) => (idx === i ? { ...s, name } : s)));
+  };
+
+  const updateSqft = (i, val) => {
+    const v = parseInt(val, 10);
+    if (!isNaN(v) && v > 0) {
+      setLocalSections((prev) => prev.map((s, idx) => (idx === i ? { ...s, area_sqft: v } : s)));
+    }
   };
 
   const handleSave = () => {
@@ -144,7 +138,13 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
   };
 
   const handleCancel = () => {
-    setLocalSections(sections || []);
+    // Reset to parent sections with centered polygons
+    setLocalSections(
+      (sections || []).map((s, i) => ({
+        ...s,
+        points: s.points?.length >= 3 ? s.points : makeCenteredPolygon(i, (sections || []).length),
+      }))
+    );
     setEditing(false);
     setActiveSec(null);
   };
@@ -200,7 +200,6 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
             src={`https://maps.google.com/maps?q=${encodedAddress}&t=k&z=20&output=embed`}
           />
 
-          {/* SVG polygon overlay */}
           <svg
             ref={svgRef}
             viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
@@ -209,55 +208,61 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
           >
             {localSections.map((sec, si) => {
               const color = COLORS[sec.color ?? si % COLORS.length];
+              const pts = sec.points || [];
+              if (pts.length < 3) return null;
               const isSelected = editing && activeSec === si;
+              const pointsStr = pts.map((p) => `${p.x},${p.y}`).join(" ");
+              const cx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
+              const cy = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+
               return (
-                <g key={si}>
-                  <Polygon
-                    pts={sec.points || []}
-                    color={color}
-                    selected={isSelected}
-                    onSelect={() => { if (editing) setActiveSec(si); }}
+                <g key={si} onClick={() => { if (editing) setActiveSec(si); }} style={{ cursor: "pointer" }}>
+                  <polygon
+                    points={pointsStr}
+                    fill={color.fill}
+                    stroke={color.stroke}
+                    strokeWidth={isSelected ? 2.5 : 1.5}
                   />
-                  {/* Drag handles — rendered on top, always interactive when editing */}
-                  {editing && (sec.points || []).map((p, pi) => (
+                  {/* Drag handles */}
+                  {editing && pts.map((p, pi) => (
                     <circle
                       key={pi}
                       cx={p.x} cy={p.y}
-                      r={isSelected ? 10 : 7}
-                      fill={isSelected ? color.stroke : "rgba(255,255,255,0.7)"}
+                      r={isSelected ? 9 : 6}
+                      fill={isSelected ? color.stroke : "rgba(255,255,255,0.85)"}
                       stroke={color.stroke}
                       strokeWidth={2}
                       onMouseDown={(e) => handleMouseDown(si, pi, e)}
                       style={{ cursor: "grab" }}
                     />
                   ))}
-                  {/* Section label */}
-                  {sec.points?.length >= 3 && (() => {
-                    const cx = sec.points.reduce((s, p) => s + p.x, 0) / sec.points.length;
-                    const cy = sec.points.reduce((s, p) => s + p.y, 0) / sec.points.length;
-                    return (
-                      <text x={cx} y={cy} textAnchor="middle" fill="white"
-                        fontSize="11" fontWeight="600"
-                        stroke="rgba(0,0,0,0.7)" strokeWidth="3" strokeLinejoin="round"
-                        paintOrder="stroke">
-                        {sec.area_sqft?.toLocaleString()} ft²
-                      </text>
-                    );
-                  })()}
+                  {/* Label */}
+                  <text
+                    x={cx} y={cy}
+                    textAnchor="middle"
+                    fill="white"
+                    fontSize="11"
+                    fontWeight="700"
+                    stroke="rgba(0,0,0,0.75)"
+                    strokeWidth="3"
+                    strokeLinejoin="round"
+                    paintOrder="stroke"
+                  >
+                    {sec.area_sqft?.toLocaleString()} ft²
+                  </text>
                 </g>
               );
             })}
           </svg>
 
-          {/* Overlay badge */}
           <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
             <Satellite className="w-3 h-3 text-amber-400" />
             <span>AI roof analysis • {totalSqft.toLocaleString()} ft² total</span>
           </div>
 
           {editing && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-blue-600/90 text-white text-xs px-3 py-1.5 rounded-full pointer-events-none">
-              Drag the corner handles to reshape sections
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-blue-600/90 text-white text-xs px-3 py-1.5 rounded-full pointer-events-none whitespace-nowrap">
+              Drag corners to reposition • Edit sq ft in table below
             </div>
           )}
         </div>
@@ -277,15 +282,30 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
                       <Input
                         value={sec.name}
                         onChange={(e) => renameSection(i, e.target.value)}
-                        className="h-7 text-xs w-36"
+                        className="h-7 text-xs w-28"
                       />
                     ) : (
-                      <span className="text-sm text-slate-700 w-36 truncate">{sec.name}</span>
+                      <span className="text-sm text-slate-700 w-28 truncate">{sec.name}</span>
                     )}
-                    <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color.stroke }} />
-                    </div>
-                    <span className="text-xs font-semibold text-slate-600 w-20 text-right">{sec.area_sqft?.toLocaleString()} ft² ({pct}%)</span>
+                    {editing ? (
+                      <div className="flex items-center gap-1">
+                        <Input
+                          type="number"
+                          value={sec.area_sqft}
+                          onChange={(e) => updateSqft(i, e.target.value)}
+                          className="h-7 text-xs w-24"
+                          min={1}
+                        />
+                        <span className="text-xs text-slate-400">ft²</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color.stroke }} />
+                        </div>
+                        <span className="text-xs font-semibold text-slate-600 w-24 text-right">{sec.area_sqft?.toLocaleString()} ft² ({pct}%)</span>
+                      </>
+                    )}
                     {editing && (
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600" onClick={() => removeSection(i)}>
                         <Trash2 className="w-3.5 h-3.5" />
@@ -304,14 +324,14 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
 
         {!localSections.length && editing && (
           <div className="p-4 bg-blue-50 border-t border-blue-100 text-center">
-            <p className="text-xs text-blue-700">Click "Add Section" to add a roof section, then drag the corner handles to position it.</p>
+            <p className="text-xs text-blue-700">Click "Add Section" to add a roof section.</p>
           </div>
         )}
 
         <div className="p-3 bg-amber-50 border-t border-amber-100 flex items-start gap-2">
           <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-xs text-amber-700">
-            Drag the vertex handles to reshape roof sections. Each section's area is automatically calculated.
+            Sections are pre-centered on the satellite image. Drag corners to reposition, and edit the sq ft numbers directly for accurate totals.
           </p>
         </div>
       </CardContent>
