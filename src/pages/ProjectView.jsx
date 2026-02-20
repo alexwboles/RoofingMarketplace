@@ -243,6 +243,17 @@ export default function ProjectView() {
             />
           </TabsContent>
 
+          {/* Materials tab — homeowner only */}
+          {!isRoofer && (
+            <TabsContent value="materials">
+              <Card>
+                <CardContent className="pt-5">
+                  <MaterialSelector project={project} onUpdate={(updates) => setProject(prev => ({ ...prev, ...updates }))} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
           {/* Review tab — homeowner only, on completed projects */}
           {!isRoofer && (project.status === "completed" || project.status === "warranty") && (
             <TabsContent value="review">
