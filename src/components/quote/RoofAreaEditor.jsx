@@ -189,12 +189,13 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
           style={{ height: CANVAS_H }}
           onMouseMove={editing ? handleMouseMove : undefined}
           onMouseUp={editing ? handleMouseUp : undefined}
+          onMouseLeave={editing ? handleMouseUp : undefined}
         >
           <iframe
             title="Satellite View"
             width="100%"
             height={CANVAS_H}
-            style={{ border: 0, pointerEvents: editing ? "none" : "auto" }}
+            style={{ border: 0, pointerEvents: "none" }}
             loading="lazy"
             src={`https://maps.google.com/maps?q=${encodedAddress}&t=k&z=20&output=embed`}
           />
@@ -204,26 +205,28 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
             ref={svgRef}
             viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
             className="absolute inset-0 w-full h-full"
-            style={{ cursor: editing && placing ? "crosshair" : "default" }}
-            onClick={handleSVGClick}
+            style={{ cursor: dragging ? "grabbing" : "default" }}
           >
             {localSections.map((sec, si) => {
               const color = COLORS[sec.color ?? si % COLORS.length];
+              const isSelected = editing && activeSec === si;
               return (
                 <g key={si}>
                   <Polygon
                     pts={sec.points || []}
                     color={color}
-                    selected={editing && activeSec === si}
-                    onSelect={() => { if (editing) { setActiveSec(si); setPlacing(false); } }}
-                    dragging={dragging?.secIdx === si}
+                    selected={isSelected}
+                    onSelect={() => { if (editing) setActiveSec(si); }}
                   />
-                  {/* Drag handles */}
-                  {editing && activeSec === si && (sec.points || []).map((p, pi) => (
+                  {/* Drag handles — rendered on top, always interactive when editing */}
+                  {editing && (sec.points || []).map((p, pi) => (
                     <circle
                       key={pi}
-                      cx={p.x} cy={p.y} r={8}
-                      fill="transparent"
+                      cx={p.x} cy={p.y}
+                      r={isSelected ? 10 : 7}
+                      fill={isSelected ? color.stroke : "rgba(255,255,255,0.7)"}
+                      stroke={color.stroke}
+                      strokeWidth={2}
                       onMouseDown={(e) => handleMouseDown(si, pi, e)}
                       style={{ cursor: "grab" }}
                     />
@@ -235,8 +238,8 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
                     return (
                       <text x={cx} y={cy} textAnchor="middle" fill="white"
                         fontSize="11" fontWeight="600"
-                        style={{ textShadow: "0 1px 2px black", paintOrder: "stroke" }}
-                        stroke="rgba(0,0,0,0.6)" strokeWidth="3" strokeLinejoin="round">
+                        stroke="rgba(0,0,0,0.7)" strokeWidth="3" strokeLinejoin="round"
+                        paintOrder="stroke">
                         {sec.area_sqft?.toLocaleString()} ft²
                       </text>
                     );
@@ -252,9 +255,9 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
             <span>AI roof analysis • {totalSqft.toLocaleString()} ft² total</span>
           </div>
 
-          {editing && placing && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-blue-600/90 text-white text-xs px-3 py-1.5 rounded-full">
-              Click on the map to add vertices • click a section name to select it
+          {editing && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-blue-600/90 text-white text-xs px-3 py-1.5 rounded-full pointer-events-none">
+              Drag the corner handles to reshape sections
             </div>
           )}
         </div>
