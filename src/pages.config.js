@@ -55,6 +55,7 @@ import RooferDashboard from './pages/RooferDashboard';
 import RooferProfile from './pages/RooferProfile';
 import RooferSignup from './pages/RooferSignup';
 import BidSubmission from './pages/BidSubmission';
+import RoofersList from './pages/RoofersList';
 import __Layout from './Layout.jsx';
 
 
@@ -67,6 +68,7 @@ export const PAGES = {
     "RooferProfile": RooferProfile,
     "RooferSignup": RooferSignup,
     "BidSubmission": BidSubmission,
+    "RoofersList": RoofersList,
 }
 
 export const pagesConfig = {
