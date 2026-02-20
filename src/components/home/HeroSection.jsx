@@ -52,9 +52,11 @@ export default function HeroSection({ children }) {
             </span>
           </h1>
 
-          <p className="mt-5 text-lg text-slate-300 max-w-xl mx-auto leading-relaxed">
-            Enter your address and our AI analyzes satellite imagery to generate
-            an accurate roof replacement estimate — no appointment needed.
+          <p className="mt-4 text-2xl sm:text-3xl font-semibold text-amber-400 max-w-xl mx-auto">
+            When roofers compete, homeowners win.
+          </p>
+          <p className="mt-3 text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
+            Roofers compete for your project — you could save 10%–25% vs. a single bid.
           </p>
         </motion.div>
 

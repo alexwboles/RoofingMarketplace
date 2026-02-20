@@ -51,8 +51,8 @@ import Home from './pages/Home';
 import ProjectView from './pages/ProjectView';
 import QuoteResult from './pages/QuoteResult';
 import RooferDashboard from './pages/RooferDashboard';
-import RooferSignup from './pages/RooferSignup';
 import RooferProfile from './pages/RooferProfile';
+import RooferSignup from './pages/RooferSignup';
 import __Layout from './Layout.jsx';
 
 
@@ -61,8 +61,8 @@ export const PAGES = {
     "ProjectView": ProjectView,
     "QuoteResult": QuoteResult,
     "RooferDashboard": RooferDashboard,
-    "RooferSignup": RooferSignup,
     "RooferProfile": RooferProfile,
+    "RooferSignup": RooferSignup,
 }
 
 export const pagesConfig = {

@@ -26,8 +26,8 @@ export default function Home() {
       <HeroSection>
         <AddressInput onSubmit={handleAddressSubmit} isLoading={isLoading} />
       </HeroSection>
-      <TrustSection />
       <HowItWorks />
+      <TrustSection />
 
       {/* CTA for Roofers */}
       <section className="py-20 px-4 bg-gradient-to-br from-slate-900 to-slate-800">

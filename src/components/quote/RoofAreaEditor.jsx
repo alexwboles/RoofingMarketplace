@@ -16,18 +16,18 @@ const CANVAS_W = 640;
 const CANVAS_H = 360;
 
 function makeCenteredPolygon(i, total) {
+  const PAD = 30;
+  const GAP = 12;
   const cols = Math.min(total, 2);
   const rows = Math.ceil(total / cols);
-  const blockW = Math.min(200, CANVAS_W * 0.55 / cols);
-  const blockH = Math.min(130, CANVAS_H * 0.5 / rows);
+  const totalW = CANVAS_W - PAD * 2;
+  const totalH = CANVAS_H - PAD * 2;
+  const blockW = (totalW - (cols - 1) * GAP) / cols;
+  const blockH = (totalH - (rows - 1) * GAP) / rows;
   const col = i % cols;
   const row = Math.floor(i / cols);
-  const gridW = cols * blockW + (cols - 1) * 10;
-  const gridH = rows * blockH + (rows - 1) * 10;
-  const startX = (CANVAS_W - gridW) / 2;
-  const startY = (CANVAS_H - gridH) / 2;
-  const x1 = startX + col * (blockW + 10);
-  const y1 = startY + row * (blockH + 10);
+  const x1 = PAD + col * (blockW + GAP);
+  const y1 = PAD + row * (blockH + GAP);
   return [
     { x: x1, y: y1 },
     { x: x1 + blockW, y: y1 },
