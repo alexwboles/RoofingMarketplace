@@ -26,24 +26,22 @@ function polygonArea(pts) {
   return Math.abs(area) / 2;
 }
 
-function Polygon({ pts, color, selected, onSelect, dragging }) {
+function Polygon({ pts, color, selected, onSelect }) {
   if (pts.length < 2) return null;
   const points = pts.map((p) => `${p.x},${p.y}`).join(" ");
   return (
-    <g style={{ cursor: dragging ? "grabbing" : "pointer" }} onClick={onSelect}>
+    <g onClick={onSelect} style={{ cursor: "pointer" }}>
       <polygon
         points={points}
         fill={color.fill}
         stroke={color.stroke}
         strokeWidth={selected ? 2.5 : 1.5}
-        strokeDasharray={selected ? "none" : "none"}
       />
-      {pts.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r={selected ? 7 : 5}
-          fill={selected ? color.stroke : "white"}
-          stroke={color.stroke}
-          strokeWidth={1.5}
-          style={{ cursor: "grab" }}
+      {selected && pts.map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r={6}
+          fill={color.stroke}
+          stroke="white"
+          strokeWidth={2}
         />
       ))}
     </g>
