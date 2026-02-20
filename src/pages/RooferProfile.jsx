@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ArrowLeft, Star, MapPin, Phone, Mail, Shield, Award,
-  CheckCircle2, Hammer, Clock, Users, Loader2
+  CheckCircle2, Hammer, Clock, Users, Loader2, MessageSquare
 } from "lucide-react";
+import RooferReviews from "@/components/roofer/RooferReviews";
 
 const tierColors = {
   basic: "bg-slate-50 text-slate-600 border-slate-200",
