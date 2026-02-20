@@ -41,14 +41,18 @@ export default function RooferProfile() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [reviews, setReviews] = useState([]);
+
   useEffect(() => {
     if (!rooferId) { setLoading(false); return; }
     Promise.all([
       base44.entities.Roofer.filter({ id: rooferId }),
       base44.entities.Lead.filter({ roofer_id: rooferId }),
-    ]).then(([rooferRes, leadsRes]) => {
+      base44.entities.Review.filter({ roofer_id: rooferId }),
+    ]).then(([rooferRes, leadsRes, reviewsRes]) => {
       setRoofer(rooferRes[0] || null);
       setLeads(leadsRes || []);
+      setReviews(reviewsRes || []);
       setLoading(false);
     });
   }, [rooferId]);
