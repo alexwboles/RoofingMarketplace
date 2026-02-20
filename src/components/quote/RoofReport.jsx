@@ -67,7 +67,6 @@ export default function RoofReport({ analysis, onSave }) {
       fields: [
         { key: "total_area_sqft", label: "Total Roof Area (sq ft)", type: "number" },
         { key: "pitch", label: "Pitch (rise/run)", type: "text", placeholder: "e.g. 6/12" },
-        { key: "stories", label: "Stories", type: "number" },
         { key: "num_facets", label: "Number of Facets (Planes)", type: "number" },
       ],
     },
