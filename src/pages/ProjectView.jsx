@@ -12,6 +12,7 @@ import PaymentPanel from "@/components/project/PaymentPanel";
 import ProjectMessaging from "@/components/project/ProjectMessaging";
 import ReviewForm from "@/components/project/ReviewForm";
 import MaterialSelector from "@/components/project/MaterialSelector";
+import PhotoGallery from "@/components/project/PhotoGallery";
 import { toast } from "sonner";
 
 const statusColors = {
