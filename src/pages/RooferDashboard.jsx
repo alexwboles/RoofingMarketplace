@@ -250,14 +250,14 @@ export default function RooferDashboard() {
 
             <TabsContent value="new_leads">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {newLeads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                {newLeads.map((lead) => <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatusChange} onBidUpdate={() => queryClient.invalidateQueries({ queryKey: ["leads"] })} />)}
                 {!newLeads.length && <p className="text-sm text-slate-400 col-span-2 text-center py-12">No new leads yet.</p>}
               </div>
             </TabsContent>
 
             <TabsContent value="leads">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {leads.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+                {leads.map((lead) => <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatusChange} onBidUpdate={() => queryClient.invalidateQueries({ queryKey: ["leads"] })} />)}
                 {!leads.length && <p className="text-sm text-slate-400 col-span-2 text-center py-12">No leads yet.</p>}
               </div>
             </TabsContent>
