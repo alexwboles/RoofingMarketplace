@@ -240,11 +240,13 @@ export default function RooferDashboard() {
           </div>
         ) : (
           <Tabs defaultValue="projects">
-            <TabsList className="bg-white border mb-6">
+            <TabsList className="bg-white border mb-6 flex-wrap h-auto gap-1 py-1">
               <TabsTrigger value="projects">Active Projects ({activeProjects.length})</TabsTrigger>
               <TabsTrigger value="new_leads">New Leads ({newLeads.length})</TabsTrigger>
               <TabsTrigger value="leads">All Leads ({leads.length})</TabsTrigger>
               <TabsTrigger value="completed">Completed ({completedProjects.length})</TabsTrigger>
+              <TabsTrigger value="appointments"><Calendar className="w-3.5 h-3.5 mr-1" /> Appointments</TabsTrigger>
+              <TabsTrigger value="analytics"><BarChart2 className="w-3.5 h-3.5 mr-1" /> Analytics</TabsTrigger>
             </TabsList>
 
             <TabsContent value="projects">
