@@ -220,6 +220,8 @@ Return all fields including:
           stories: { type: "number" },
           current_material: { type: "string" },
           current_material_label: { type: "string" },
+          condition_notes: { type: "string" },
+          estimated_remaining_life_years: { type: "number" },
           ai_suggestions: { type: "array", items: { type: "string" } },
           roof_sections: {
             type: "array",
