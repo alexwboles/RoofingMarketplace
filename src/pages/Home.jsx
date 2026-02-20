@@ -9,25 +9,6 @@ import HowItWorks from "@/components/home/HowItWorks";
 import TrustSection from "@/components/home/TrustSection";
 import { LayoutDashboard, Hammer as HammerIcon } from "lucide-react";
 
-// Modern logo
-const Logo = () => (
-  <div className="flex items-center gap-2">
-    <div className="relative w-8 h-8">
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg" />
-      <svg
-        viewBox="0 0 24 24"
-        className="w-8 h-8 text-white relative z-10"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-      >
-        <path d="M3 12h18M12 3v18M7 8l10 8M7 16l10-8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </div>
-    <span className="font-bold text-slate-900">Roofing<span className="text-amber-500">Marketplace</span></span>
-  </div>
-);
-
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
