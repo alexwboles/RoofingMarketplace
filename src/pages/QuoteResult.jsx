@@ -517,6 +517,7 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
           estimated_total: quote.estimated_total,
           material_type: materialType,
           roof_area_sqft: quote.roof_analysis?.total_area_sqft,
+          satellite_image_url: quote.satellite_image_url || `https://maps.google.com/maps?q=${encodeURIComponent(quote.address)}&t=k&z=20`,
           status: "new",
           tier: p.tier,
           roofer_bid: p.bid_price,
