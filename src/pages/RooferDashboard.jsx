@@ -163,9 +163,19 @@ export default function RooferDashboard() {
     queryFn: () => base44.entities.Project.list("-created_date", 100),
   });
 
+  const { data: bids = [], isLoading: bidsLoading } = useQuery({
+    queryKey: ["bids"],
+    queryFn: () => base44.entities.RooferBid.filter({}, "-created_date", 100),
+  });
+
   const updateLeadMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Lead.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["leads"] }),
+  });
+
+  const updateBidMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.RooferBid.update(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["bids"] }),
   });
 
   const handleStatusChange = (lead, newStatus) => {
@@ -177,6 +187,8 @@ export default function RooferDashboard() {
   const activeLeads = leads.filter((l) => ["contacted", "scheduled", "proposal_sent"].includes(l.status));
   const activeProjects = projects.filter((p) => !["completed", "warranty"].includes(p.status));
   const completedProjects = projects.filter((p) => ["completed", "warranty"].includes(p.status));
+  const pendingBids = bids.filter((b) => b.status === "draft" || b.status === "submitted");
+  const acceptedBids = bids.filter((b) => b.status === "accepted");
 
   const totalRevenue = completedProjects.reduce((s, p) => s + (p.contract_amount || 0), 0);
   const wonLeads = leads.filter(l => ["won", "accepted"].includes(l.status)).length;
@@ -231,7 +243,7 @@ export default function RooferDashboard() {
     </Card>
   );
 
-  const isLoading = leadsLoading || projectsLoading;
+  const isLoading = leadsLoading || projectsLoading || bidsLoading;
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-6">
@@ -262,24 +274,64 @@ export default function RooferDashboard() {
             <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
           </div>
         ) : (
-          <Tabs defaultValue="projects">
-            <TabsList className="bg-white border mb-6 flex-wrap h-auto gap-1 py-1">
-              <TabsTrigger value="projects">Active Projects ({activeProjects.length})</TabsTrigger>
-              <TabsTrigger value="new_leads">New Leads ({newLeads.length})</TabsTrigger>
-              <TabsTrigger value="leads">All Leads ({leads.length})</TabsTrigger>
-              <TabsTrigger value="completed">Completed ({completedProjects.length})</TabsTrigger>
-              <TabsTrigger value="appointments"><Calendar className="w-3.5 h-3.5 mr-1" /> Appointments</TabsTrigger>
-              <TabsTrigger value="analytics"><BarChart2 className="w-3.5 h-3.5 mr-1" /> Analytics</TabsTrigger>
-            </TabsList>
+           <Tabs defaultValue="projects">
+             <TabsList className="bg-white border mb-6 flex-wrap h-auto gap-1 py-1">
+               <TabsTrigger value="projects">Active Projects ({activeProjects.length})</TabsTrigger>
+               <TabsTrigger value="bids">My Bids ({pendingBids.length})</TabsTrigger>
+               <TabsTrigger value="new_leads">New Leads ({newLeads.length})</TabsTrigger>
+               <TabsTrigger value="leads">All Leads ({leads.length})</TabsTrigger>
+               <TabsTrigger value="completed">Completed ({completedProjects.length})</TabsTrigger>
+               <TabsTrigger value="appointments"><Calendar className="w-3.5 h-3.5 mr-1" /> Appointments</TabsTrigger>
+               <TabsTrigger value="analytics"><BarChart2 className="w-3.5 h-3.5 mr-1" /> Analytics</TabsTrigger>
+             </TabsList>
 
             <TabsContent value="projects">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {activeProjects.map((p) => <ProjectCard key={p.id} project={p} />)}
-                {!activeProjects.length && <p className="text-sm text-slate-400 col-span-2 text-center py-12">No active projects yet.</p>}
-              </div>
-            </TabsContent>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 {activeProjects.map((p) => <ProjectCard key={p.id} project={p} />)}
+                 {!activeProjects.length && <p className="text-sm text-slate-400 col-span-2 text-center py-12">No active projects yet.</p>}
+               </div>
+             </TabsContent>
 
-            <TabsContent value="new_leads">
+             <TabsContent value="bids">
+               <div className="space-y-3">
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                   {pendingBids.map((bid) => (
+                     <Card key={bid.id} className="hover:shadow-md transition-shadow">
+                       <CardContent className="pt-5">
+                         <div className="mb-3">
+                           <div className="flex items-start justify-between mb-2">
+                             <div>
+                               <p className="text-sm font-semibold text-slate-800">{bid.address}</p>
+                               <p className="text-xs text-slate-500">{bid.material_type?.replace(/_/g, " ")}</p>
+                             </div>
+                             <Badge className={bid.status === "submitted" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}>
+                               {bid.status}
+                             </Badge>
+                           </div>
+                         </div>
+                         <div className="grid grid-cols-2 gap-2 mb-4">
+                           <div className="bg-slate-50 rounded-lg p-2 text-center">
+                             <p className="text-xs text-slate-400">Your Bid</p>
+                             <p className="text-sm font-bold text-slate-800">${bid.bid_amount?.toLocaleString()}</p>
+                           </div>
+                           <div className="bg-slate-50 rounded-lg p-2 text-center">
+                             <p className="text-xs text-slate-400">Area</p>
+                             <p className="text-sm font-bold text-slate-800">{bid.roof_area_sqft?.toLocaleString()} ft²</p>
+                           </div>
+                         </div>
+                         <div className="flex gap-2">
+                           <Button size="sm" variant="outline" className="flex-1 text-xs h-8">Edit</Button>
+                           <Button size="sm" className="flex-1 text-xs h-8 bg-emerald-600 hover:bg-emerald-700">Submit</Button>
+                         </div>
+                       </CardContent>
+                     </Card>
+                   ))}
+                 </div>
+                 {!pendingBids.length && <p className="text-sm text-slate-400 text-center py-12 bg-white rounded-lg">No pending bids yet.</p>}
+               </div>
+             </TabsContent>
+
+             <TabsContent value="new_leads">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {newLeads.map((lead) => <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatusChange} onBidUpdate={() => queryClient.invalidateQueries({ queryKey: ["leads"] })} />)}
                 {!newLeads.length && <p className="text-sm text-slate-400 col-span-2 text-center py-12">No new leads yet.</p>}

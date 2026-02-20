@@ -700,31 +700,31 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Satellite + Roof Area Editor */}
-              <RoofAreaEditor
-                address={quote.address}
-                sections={roofSections}
-                onSectionsChange={handleSectionsChange}
-              />
+               {/* Satellite + Roof Area Editor */}
+               <RoofAreaEditor
+                 address={quote.address}
+                 sections={roofSections}
+                 onSectionsChange={handleSectionsChange}
+               />
 
-              {/* Property Details (optional, improves analysis) */}
-              <PropertyDetailsForm value={propertyDetails} onChange={setPropertyDetails} />
+               {/* Summary of key metrics — moved here */}
+               <QuoteSummary analysis={quote.roof_analysis} />
 
-              {/* Contact Form — get your free quote */}
-              <ContactForm onSubmit={(info) => handleContactSubmit({ ...info, payment_type: paymentType })} isLoading={isSubmitting} />
+               {/* Price Estimate */}
+               <PriceEstimate
+                 materialsCost={quote.materials_cost}
+                 laborCost={quote.labor_cost}
+                 total={quote.estimated_total}
+                 priceRangeLow={quote.price_range_low}
+                 priceRangeHigh={quote.price_range_high}
+                 materialType={materialType}
+               />
 
-              {/* Summary of key metrics */}
-              <QuoteSummary analysis={quote.roof_analysis} />
+               {/* Property Details (optional, improves analysis) */}
+               <PropertyDetailsForm value={propertyDetails} onChange={setPropertyDetails} />
 
-              {/* Price Estimate */}
-              <PriceEstimate
-                materialsCost={quote.materials_cost}
-                laborCost={quote.labor_cost}
-                total={quote.estimated_total}
-                priceRangeLow={quote.price_range_low}
-                priceRangeHigh={quote.price_range_high}
-                materialType={materialType}
-              />
+               {/* Contact Form — get your free quote */}
+               <ContactForm onSubmit={(info) => handleContactSubmit({ ...info, payment_type: paymentType })} isLoading={isSubmitting} />
 
               {/* Optional: Detailed breakdown sections (collapsed by default) */}
               <details className="group border border-slate-200 rounded-xl">
