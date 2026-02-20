@@ -56,7 +56,7 @@ export default function HeroSection({ children }) {
             When roofers compete, homeowners win.
           </p>
           <p className="mt-3 text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
-            Roofers compete for your project — you could save 10%–25% vs. a single bid.
+            You could save 10%–25% vs. a single bid.
           </p>
         </motion.div>
 
