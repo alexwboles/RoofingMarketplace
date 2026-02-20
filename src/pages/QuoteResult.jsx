@@ -18,24 +18,66 @@ import { ArrowLeft, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-// Generate a default stacked rectangle polygon for a section index
-function generateDefaultPolygon(i, total) {
-  const cols = Math.min(total, 2);
+// Generate a realistic roof polygon centered in the satellite view
+// The satellite is zoomed to z=20, which shows roughly 50-80m across for a typical home.
+// We place the roof outline in the center ~40% of the canvas to approximate the actual structure.
+function generateRoofPolygon(i, total, sectionFraction, complexity) {
+  const W = 640, H = 360;
+  // Roof occupies roughly the center 42% width and 38% height of the satellite at z=20
+  const roofW = W * 0.42;
+  const roofH = H * 0.38;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  if (total === 1) {
+    // Single polygon shaped like a simple gable/hip roof
+    if (complexity === "simple") {
+      // Gable: rectangle
+      const hw = roofW / 2, hh = roofH / 2;
+      return [
+        { x: cx - hw, y: cy - hh },
+        { x: cx + hw, y: cy - hh },
+        { x: cx + hw, y: cy + hh },
+        { x: cx - hw, y: cy + hh },
+      ];
+    } else {
+      // Hip roof: octagon-ish
+      const hw = roofW / 2, hh = roofH / 2, cut = roofH * 0.2;
+      return [
+        { x: cx - hw + cut, y: cy - hh },
+        { x: cx + hw - cut, y: cy - hh },
+        { x: cx + hw, y: cy - hh + cut },
+        { x: cx + hw, y: cy + hh - cut },
+        { x: cx + hw - cut, y: cy + hh },
+        { x: cx - hw + cut, y: cy + hh },
+        { x: cx - hw, y: cy + hh - cut },
+        { x: cx - hw, y: cy - hh + cut },
+      ];
+    }
+  }
+
+  // Multiple sections — split the roof area
+  const cols = total <= 2 ? total : 2;
+  const rows = Math.ceil(total / cols);
   const col = i % cols;
   const row = Math.floor(i / cols);
-  const W = 640, H = 360;
-  const cellW = W / cols;
-  const cellH = H / Math.ceil(total / cols);
-  const pad = 20;
-  const x1 = col * cellW + pad;
-  const y1 = row * cellH + pad;
-  const x2 = (col + 1) * cellW - pad;
-  const y2 = (row + 1) * cellH - pad;
+  const secW = roofW / cols;
+  const secH = roofH / rows;
+  const gap = 4;
+  const x1 = cx - roofW / 2 + col * secW + gap;
+  const y1 = cy - roofH / 2 + row * secH + gap;
+  const x2 = x1 + secW - gap * 2;
+  const y2 = y1 + secH - gap * 2;
+  // Fraction scales the polygon area proportionally
+  const scaleX = Math.sqrt(sectionFraction || 1);
+  const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
+  const sx1 = midX - (midX - x1) * scaleX;
+  const sx2 = midX + (x2 - midX) * scaleX;
   return [
-    { x: x1, y: y1 },
-    { x: x2, y: y1 },
-    { x: x2, y: y2 },
-    { x: x1, y: y2 },
+    { x: sx1, y: y1 },
+    { x: sx2, y: y1 },
+    { x: sx2, y: y2 },
+    { x: sx1, y: y2 },
   ];
 }
 
