@@ -280,6 +280,14 @@ Return ALL of the following fields with real, researched values:
       }
     });
 
+    // Safety guard: ensure total_area_sqft is never unrealistically small
+    if (analysis && analysis.total_area_sqft < 900) {
+      const footprint = extraDetails.home_sqft ? parseInt(extraDetails.home_sqft) : 1500;
+      const stories = analysis.stories || 1;
+      const pitch_mult = analysis.pitch_multiplier || 1.118;
+      const waste = analysis.waste_factor || 1.10;
+      analysis.total_area_sqft = Math.round((footprint / stories) * 1.1 * pitch_mult * waste);
+    }
     return analysis;
   }, []);
 
