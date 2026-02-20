@@ -181,7 +181,9 @@ Return all fields including:
 - difficulty_score (1-10), difficulty_factors (string array)
 - num_facets, num_peaks, num_valleys, num_hips
 - ridge_length_ft, eave_length_ft, rake_length_ft, valley_length_ft
-- obstacles: array of ONLY items physically visible on the roof surface (skylights, chimneys, plumbing vents/pipes, HVAC units, solar panels, satellite dishes). Each item: {type: string, count: number}. If none are visible, return an empty array. DO NOT guess. Only include what you can realistically confirm from satellite/street-view data.
+- obstacles: CAREFULLY examine the roof surface for any protrusions or penetrations. Common ones to look for: chimney/flue, plumbing vent pipes (small round protrusions), skylights (rectangular glass panels), HVAC units, solar panels, satellite dishes, ridge vents, box vents/turtle vents. Use street-view and satellite data. If you can confirm any from satellite or public records/street view data, include them. Each item: {type: string, count: number}. If truly nothing is visible or detectable, return an empty array.
+- condition_notes: Brief notes on visible roof condition if detectable (e.g., "algae streaking visible on north slopes", "appears newer construction", "granule loss pattern consistent with aging shingles")
+- estimated_remaining_life_years: estimated years of remaining useful life based on material type and apparent condition (number)
 - complexity: "simple" | "moderate" | "complex"
 - stories, current_material, current_material_label
 - roof_sections: [{name, area_sqft, pitch}] — MUST sum to total_area_sqft. Use directional names (Front Slope, Back Slope, Left Hip, Right Hip, Garage Roof, etc.) so sections can be auto-positioned on the satellite view.
