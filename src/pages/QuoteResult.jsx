@@ -6,7 +6,6 @@ import AnalyzingOverlay from "@/components/quote/AnalyzingOverlay";
 import RoofAnalysisCard from "@/components/quote/RoofAnalysisCard";
 import MaterialsList from "@/components/quote/MaterialsList";
 import PriceEstimate from "@/components/quote/PriceEstimate";
-import MaterialTypeSelector from "@/components/quote/MaterialTypeSelector";
 import ContactForm from "@/components/quote/ContactForm";
 import RoofAreaEditor from "@/components/quote/RoofAreaEditor";
 import RoofReport from "@/components/quote/RoofReport";
