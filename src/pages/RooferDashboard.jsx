@@ -8,13 +8,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   MapPin, Phone, Mail, DollarSign, Clock,
-  CheckCircle2, UserCheck, FileText, Loader2, FolderOpen, ArrowRight, TrendingUp, ChevronDown, ChevronUp
+  CheckCircle2, UserCheck, FileText, Loader2, FolderOpen, ArrowRight, TrendingUp, ChevronDown, ChevronUp,
+  Star, Calendar, BarChart2, Percent
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import DynamicPricingEngine from "@/components/roofer/DynamicPricingEngine";
+import AppointmentManager from "@/components/appointments/AppointmentManager";
 
 function LeadCard({ lead, onStatusChange, onBidUpdate }) {
   const [showPricing, setShowPricing] = useState(false);
