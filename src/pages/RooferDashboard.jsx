@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import DynamicPricingEngine from "@/components/roofer/DynamicPricingEngine";
 import AppointmentManager from "@/components/appointments/AppointmentManager";
+import ServiceAreaEditor from "@/components/roofer/ServiceAreaEditor";
 
 function LeadCard({ lead, onStatusChange, onBidUpdate }) {
   const [showPricing, setShowPricing] = useState(false);
@@ -153,6 +154,16 @@ export default function RooferDashboard() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const { data: roofer = null } = useQuery({
+    queryKey: ["roofer"],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      if (!user) return null;
+      const roofers = await base44.entities.Roofer.filter({ email: user.email });
+      return roofers[0];
+    },
+  });
+
   const { data: leads = [], isLoading: leadsLoading } = useQuery({
     queryKey: ["leads"],
     queryFn: () => base44.entities.Lead.list("-created_date", 100),
@@ -283,6 +294,7 @@ export default function RooferDashboard() {
                <TabsTrigger value="completed">Completed ({completedProjects.length})</TabsTrigger>
                <TabsTrigger value="appointments"><Calendar className="w-3.5 h-3.5 mr-1" /> Appointments</TabsTrigger>
                <TabsTrigger value="analytics"><BarChart2 className="w-3.5 h-3.5 mr-1" /> Analytics</TabsTrigger>
+               <TabsTrigger value="settings">Settings</TabsTrigger>
              </TabsList>
 
             <TabsContent value="projects">
@@ -354,6 +366,10 @@ export default function RooferDashboard() {
 
             <TabsContent value="appointments">
               <AppointmentManager rooferId="dashboard" rooferCompany="My Company" />
+            </TabsContent>
+
+            <TabsContent value="settings">
+              {roofer && <ServiceAreaEditor roofer={roofer} onSave={() => queryClient.invalidateQueries({ queryKey: ["roofer"] })} />}
             </TabsContent>
 
             <TabsContent value="analytics">
