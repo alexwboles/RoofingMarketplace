@@ -183,8 +183,15 @@ Also calculate total materials cost, estimated labor cost (varies by complexity 
 
       await base44.entities.RoofQuote.update(quoteId, updatedQuote);
 
+      const initialSections = (analysis.roof_sections || []).map((s, i) => ({
+        name: s.name,
+        area_sqft: s.area_sqft,
+        color: i % 6,
+        points: generateDefaultPolygon(i, analysis.roof_sections.length),
+      }));
+      setRoofSections(initialSections);
+
       setQuote({ ...quoteData, ...updatedQuote });
-      // Small delay to let animation finish
       setTimeout(() => setIsAnalyzing(false), 1500);
     };
 
