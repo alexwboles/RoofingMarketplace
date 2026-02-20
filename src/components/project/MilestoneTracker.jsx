@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Clock, Circle, ChevronRight, DollarSign } from "lucide-react";
+import { CheckCircle2, Clock, Circle, ChevronRight, DollarSign, Loader2, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 
 const statusIcon = {
   complete: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
@@ -11,8 +13,47 @@ const statusIcon = {
   pending: <Circle className="w-5 h-5 text-slate-300" />,
 };
 
-export default function MilestoneTracker({ milestones = [], isRoofer, onUpdateMilestone }) {
+export default function MilestoneTracker({ milestones = [], isRoofer, onUpdateMilestone, project }) {
   const completed = milestones.filter((m) => m.status === "complete").length;
+  const [checkingOut, setCheckingOut] = useState(null);
+
+  const handleMarkComplete = async (i, milestone) => {
+    await onUpdateMilestone(i, { ...milestone, status: "complete", completed_date: new Date().toLocaleDateString() });
+
+    // If milestone has a payment amount and homeowner, trigger Stripe checkout prompt
+    if (milestone.payment_amount > 0 && project?.homeowner_email) {
+      toast.info(`Milestone complete! A payment request of $${milestone.payment_amount.toLocaleString()} has been triggered for the homeowner.`);
+    }
+  };
+
+  const handlePayMilestone = async (i, milestone) => {
+    // Check if running in iframe (preview) - block checkout
+    if (window.self !== window.top) {
+      alert("Stripe checkout only works from the published app. Please open the app in a new tab to make payments.");
+      return;
+    }
+
+    setCheckingOut(i);
+    const currentUrl = window.location.href.split("?")[0];
+    const projectId = project?.id;
+
+    const response = await base44.functions.invoke("createMilestoneCheckout", {
+      projectId,
+      milestoneIndex: i,
+      amount: milestone.payment_amount,
+      description: milestone.title,
+      successUrl: `${currentUrl}?id=${projectId}&role=homeowner&payment=success`,
+      cancelUrl: `${currentUrl}?id=${projectId}&role=homeowner`,
+    });
+
+    setCheckingOut(null);
+
+    if (response.data?.url) {
+      window.location.href = response.data.url;
+    } else {
+      toast.error("Could not initiate payment. Please try again.");
+    }
+  };
 
   return (
     <Card className="border-slate-200">
@@ -24,7 +65,6 @@ export default function MilestoneTracker({ milestones = [], isRoofer, onUpdateMi
           </div>
           <span className="text-xs text-slate-400">{completed}/{milestones.length} complete</span>
         </div>
-        {/* Progress bar */}
         <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2">
           <div
             className="h-full bg-emerald-500 rounded-full transition-all duration-700"
@@ -63,13 +103,18 @@ export default function MilestoneTracker({ milestones = [], isRoofer, onUpdateMi
                       <div className="flex items-center gap-1 text-xs font-medium text-slate-600">
                         <DollarSign className="w-3 h-3" />
                         {milestone.payment_amount?.toLocaleString()}
-                        {milestone.payment_status === "paid" && (
-                          <Badge className="text-[10px] bg-emerald-50 text-emerald-600 border-0 ml-1">Paid</Badge>
-                        )}
+                        {milestone.payment_status === "paid"
+                          ? <Badge className="text-[10px] bg-emerald-50 text-emerald-600 border-0 ml-1">Paid</Badge>
+                          : milestone.status === "complete"
+                            ? <Badge className="text-[10px] bg-amber-50 text-amber-600 border-amber-200 border ml-1">Due</Badge>
+                            : null
+                        }
                       </div>
                     )}
                   </div>
                 </div>
+
+                {/* Roofer actions */}
                 {isRoofer && milestone.status !== "complete" && (
                   <div className="flex gap-2 mt-2">
                     {milestone.status === "pending" && (
@@ -86,12 +131,28 @@ export default function MilestoneTracker({ milestones = [], isRoofer, onUpdateMi
                       <Button
                         size="sm"
                         className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-                        onClick={() => onUpdateMilestone(i, { ...milestone, status: "complete", completed_date: new Date().toLocaleDateString() })}
+                        onClick={() => handleMarkComplete(i, milestone)}
                       >
                         Mark Complete
                       </Button>
                     )}
                   </div>
+                )}
+
+                {/* Homeowner pay button — shown when milestone is complete and payment is unpaid */}
+                {!isRoofer && milestone.status === "complete" && milestone.payment_amount > 0 && milestone.payment_status !== "paid" && (
+                  <Button
+                    size="sm"
+                    className="mt-2 h-7 text-xs bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                    onClick={() => handlePayMilestone(i, milestone)}
+                    disabled={checkingOut === i}
+                  >
+                    {checkingOut === i
+                      ? <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                      : <CreditCard className="w-3 h-3 mr-1" />
+                    }
+                    Pay ${milestone.payment_amount?.toLocaleString()}
+                  </Button>
                 )}
               </div>
             </div>

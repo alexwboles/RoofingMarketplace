@@ -33,6 +33,18 @@ export default function ProjectView() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Handle Stripe payment success redirect
+  useEffect(() => {
+    const paymentStatus = urlParams.get("payment");
+    const milestoneIdx = urlParams.get("milestone");
+    if (paymentStatus === "success" && milestoneIdx !== null) {
+      toast.success("Payment successful! Your transaction has been recorded.");
+      // Clean up URL params without reload
+      const clean = `${window.location.pathname}?id=${projectId}&role=${role}`;
+      window.history.replaceState({}, "", clean);
+    }
+  }, []);
+
   useEffect(() => {
     if (!projectId) return;
     base44.entities.Project.filter({ id: projectId }).then((res) => {
