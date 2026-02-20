@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Calendar, Clock, CheckCircle2, X, User, Phone, Mail, Settings, Loader2, Plus, Trash2 } from "lucide-react";
+import { Calendar, Clock, CheckCircle2, X, User, Phone, Mail, Settings, Loader2, Plus, Trash2, CalendarDays } from "lucide-react";
+import CalendarView from "@/components/appointments/CalendarView";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
