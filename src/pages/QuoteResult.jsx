@@ -361,7 +361,7 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
             </div>
           </div>
 
-          {isSubmitted ? (
+          {isComplete ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -370,17 +370,32 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
               <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 className="w-8 h-8 text-emerald-600" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Quote Sent!</h2>
-              <p className="text-slate-500 max-w-md mx-auto">
-                Local roofers have been notified. Expect to hear from 2-5 qualified contractors within 24 hours.
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Project Created!</h2>
+              <p className="text-slate-500 max-w-md mx-auto mb-6">
+                Your roofing project is confirmed. Track progress, make payments, and message your roofer — all in one place.
               </p>
-              <Button
-                onClick={() => navigate(createPageUrl("Home"))}
-                className="mt-6 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-              >
-                Get Another Quote
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  onClick={() => navigate(createPageUrl("ProjectView") + `?id=${projectId}&role=homeowner`)}
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                >
+                  View My Project
+                </Button>
+                <Button variant="outline" onClick={() => navigate(createPageUrl("Home"))}>
+                  Get Another Quote
+                </Button>
+              </div>
             </motion.div>
+          ) : isMatchingRoofers ? (
+            <div className="bg-white rounded-3xl border border-slate-200 p-10 text-center">
+              <Loader2 className="w-10 h-10 animate-spin text-amber-500 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-slate-900 mb-1">Matching You with Roofers…</h3>
+              <p className="text-sm text-slate-400">Finding the best local contractors for your project</p>
+            </div>
+          ) : proposals.length > 0 ? (
+            <div className="space-y-6">
+              <RooferProposals proposals={proposals} onSelect={handleSelectRoofer} isSelecting={isSelecting} />
+            </div>
           ) : (
             <div className="space-y-6">
               {/* Satellite Image */}
