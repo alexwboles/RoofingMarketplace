@@ -1,272 +1,186 @@
-import React, { useState, useEffect } from "react";
+import React from 'react';
 import { base44 } from "@/api/base44Client";
-import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowRight, Home, FileText, CheckCircle2, Clock, DollarSign, MapPin, Loader2, Plus } from "lucide-react";
-
-const quoteStatusColors = {
-  analyzing: "bg-blue-50 text-blue-700 border-blue-200",
-  quoted: "bg-amber-50 text-amber-700 border-amber-200",
-  lead_sent: "bg-violet-50 text-violet-700 border-violet-200",
-  claimed: "bg-green-50 text-green-700 border-green-200",
-  in_progress: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-};
-
-const projectStatusColors = {
-  scheduled: "bg-blue-50 text-blue-700 border-blue-200",
-  materials_ordered: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  in_progress: "bg-amber-50 text-amber-700 border-amber-200",
-  inspection: "bg-violet-50 text-violet-700 border-violet-200",
-  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  warranty: "bg-teal-50 text-teal-700 border-teal-200",
-};
+import { Button } from "@/components/ui/button";
+import { MapPin, DollarSign, Calendar, User, MessageSquare, FileText, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { format } from "date-fns";
 
 export default function HomeownerDashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [quotes, setQuotes] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadData = async () => {
-      // Since this is public app, we won't use auth. Just show recent quotes/projects
-      const allQuotes = await base44.entities.RoofQuote.list("-created_date", 100);
-      const allProjects = await base44.entities.Project.list("-created_date", 100);
-      setQuotes(allQuotes);
-      setProjects(allProjects);
-      setLoading(false);
-    };
-    loadData();
-  }, []);
+  const { data: user } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
+  });
 
-  const activeProjects = projects.filter(p => !["completed", "warranty"].includes(p.status));
-  const pastProjects = projects.filter(p => ["completed", "warranty"].includes(p.status));
+  const { data: projects = [], isLoading } = useQuery({
+    queryKey: ["myProjects"],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      return base44.entities.Project.filter({ homeowner_email: user.email }, "-created_date", 50);
+    },
+    enabled: !!user?.email,
+  });
 
-  if (loading) {
+  const activeProjects = projects.filter(p => !['completed', 'warranty'].includes(p.status));
+  const completedProjects = projects.filter(p => ['completed', 'warranty'].includes(p.status));
+
+  if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center">
+            <p className="text-slate-600 mb-4">Please log in to view your projects.</p>
+            <Button onClick={() => base44.auth.redirectToLogin()} className="w-full">
+              Log In
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
+  const stats = [
+    { label: "Active Projects", value: activeProjects.length, color: "text-amber-600 bg-amber-50" },
+    { label: "Completed", value: completedProjects.length, color: "text-emerald-600 bg-emerald-50" },
+    { label: "Total Investment", value: `$${projects.reduce((s, p) => s + (p.contract_amount || 0), 0).toLocaleString()}`, color: "text-violet-600 bg-violet-50" },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">My Roofing Dashboard</h1>
-              <p className="text-slate-300 text-sm">Track your quotes, active projects, and completed work</p>
-            </div>
-            <Button
-              onClick={() => navigate(createPageUrl("Home"))}
-              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-            >
-              <Plus className="w-4 h-4 mr-2" /> New Quote
-            </Button>
-          </div>
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-slate-900">My Roofing Projects</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage and track your roof projects</p>
         </div>
-      </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <Tabs defaultValue="quotes">
-          <TabsList className="bg-white border mb-6 flex-wrap h-auto gap-1 py-1">
-            <TabsTrigger value="quotes">
-              <FileText className="w-4 h-4 mr-2" />
-              Quotes ({quotes.length})
-            </TabsTrigger>
-            <TabsTrigger value="active">
-              <Clock className="w-4 h-4 mr-2" />
-              Active Projects ({activeProjects.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed">
-              <CheckCircle2 className="w-4 h-4 mr-2" />
-              Completed ({pastProjects.length})
-            </TabsTrigger>
-          </TabsList>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {stats.map((s, i) => (
+            <Card key={i}>
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>
+                  {i === 0 && <Calendar className="w-5 h-5" />}
+                  {i === 1 && <FileText className="w-5 h-5" />}
+                  {i === 2 && <DollarSign className="w-5 h-5" />}
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">{s.label}</p>
+                  <p className="text-lg font-bold text-slate-900">{s.value}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-          {/* QUOTES TAB */}
-          <TabsContent value="quotes" className="space-y-4">
-            {quotes.length === 0 ? (
-              <Card>
-                <CardContent className="pt-10 text-center">
-                  <p className="text-slate-500 mb-4">No quotes yet. Get started with a new estimate.</p>
-                  <Button
-                    onClick={() => navigate(createPageUrl("Home"))}
-                    className="bg-amber-500 hover:bg-amber-600"
-                  >
-                    Create Your First Quote
+        {isLoading ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {activeProjects.length > 0 && (
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900 mb-4">Active Projects</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {activeProjects.map((project) => (
+                    <Card key={project.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl("ProjectView") + `?id=${project.id}&role=homeowner`)}>
+                      <CardContent className="pt-5">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                              <p className="text-sm font-semibold text-slate-800">{project.address}</p>
+                            </div>
+                            <p className="text-xs text-slate-500">{project.roofer_company}</p>
+                          </div>
+                          <Badge className="bg-amber-50 text-amber-700 border border-amber-200 text-xs capitalize">
+                            {project.status?.replace(/_/g, " ")}
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          <div className="bg-slate-50 rounded-lg p-2 text-center">
+                            <p className="text-xs text-slate-400">Contract</p>
+                            <p className="text-sm font-bold text-slate-800">${project.contract_amount?.toLocaleString()}</p>
+                          </div>
+                          <div className="bg-slate-50 rounded-lg p-2 text-center">
+                            <p className="text-xs text-slate-400">Paid</p>
+                            <p className="text-sm font-bold text-emerald-600">${(project.amount_paid || 0).toLocaleString()}</p>
+                          </div>
+                        </div>
+
+                        <Button size="sm" variant="outline" className="w-full text-xs h-8">
+                          View Project
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {completedProjects.length > 0 && (
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900 mb-4">Completed Projects</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {completedProjects.map((project) => (
+                    <Card key={project.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl("ProjectView") + `?id=${project.id}&role=homeowner`)}>
+                      <CardContent className="pt-5">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                              <p className="text-sm font-semibold text-slate-800">{project.address}</p>
+                            </div>
+                            <p className="text-xs text-slate-500">{project.roofer_company}</p>
+                          </div>
+                          <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs">Completed</Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          <div className="bg-slate-50 rounded-lg p-2 text-center">
+                            <p className="text-xs text-slate-400">Total Cost</p>
+                            <p className="text-sm font-bold text-slate-800">${project.contract_amount?.toLocaleString()}</p>
+                          </div>
+                          <div className="bg-slate-50 rounded-lg p-2 text-center">
+                            <p className="text-xs text-slate-400">Completed</p>
+                            <p className="text-sm font-bold text-slate-800">{project.actual_completion ? format(new Date(project.actual_completion), 'MMM d') : '—'}</p>
+                          </div>
+                        </div>
+
+                        <Button size="sm" variant="outline" className="w-full text-xs h-8">
+                          View Details
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {projects.length === 0 && (
+              <Card className="text-center py-16">
+                <CardContent>
+                  <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500 mb-4">No projects yet. Start by getting a roof quote!</p>
+                  <Button onClick={() => navigate(createPageUrl("Home"))}>
+                    Get a Quote
                   </Button>
                 </CardContent>
               </Card>
-            ) : (
-              quotes.map((quote) => (
-                <Card key={quote.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-slate-900">{quote.address}</h3>
-                          <Badge
-                            className={`${quoteStatusColors[quote.status]} border`}
-                          >
-                            {quote.status?.replace(/_/g, " ")}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4 mt-4 text-sm">
-                          <div>
-                            <p className="text-slate-400 text-xs">Roof Area</p>
-                            <p className="font-semibold text-slate-900">
-                              {quote.roof_analysis?.total_area_sqft?.toLocaleString() || "—"} ft²
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400 text-xs">Estimated Total</p>
-                            <p className="font-semibold text-slate-900">
-                              ${quote.estimated_total?.toLocaleString() || "—"}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400 text-xs">Material</p>
-                            <p className="font-semibold text-slate-900">
-                              {(quote.material_type || "").replace(/_/g, " ")}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate(createPageUrl("QuoteResult") + `?id=${quote.id}`)}
-                      >
-                        View <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
             )}
-          </TabsContent>
-
-          {/* ACTIVE PROJECTS TAB */}
-          <TabsContent value="active" className="space-y-4">
-            {activeProjects.length === 0 ? (
-              <Card>
-                <CardContent className="pt-10 text-center">
-                  <p className="text-slate-500">No active projects</p>
-                </CardContent>
-              </Card>
-            ) : (
-              activeProjects.map((project) => (
-                <Card key={project.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-slate-900">{project.address}</h3>
-                          <Badge
-                            className={`${projectStatusColors[project.status]} border`}
-                          >
-                            {project.status?.replace(/_/g, " ")}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-4 gap-4 mt-4 text-sm">
-                          <div>
-                            <p className="text-slate-400 text-xs">Roofer</p>
-                            <p className="font-semibold text-slate-900">{project.roofer_company}</p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400 text-xs">Contract Amount</p>
-                            <p className="font-semibold text-slate-900">
-                              ${project.contract_amount?.toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400 text-xs">Paid</p>
-                            <p className="font-semibold text-emerald-600">
-                              ${(project.amount_paid || 0).toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400 text-xs">Est. Completion</p>
-                            <p className="font-semibold text-slate-900">
-                              {project.estimated_completion || "—"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate(createPageUrl("ProjectView") + `?id=${project.id}&role=homeowner`)}
-                      >
-                        Manage <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </TabsContent>
-
-          {/* COMPLETED TAB */}
-          <TabsContent value="completed" className="space-y-4">
-            {pastProjects.length === 0 ? (
-              <Card>
-                <CardContent className="pt-10 text-center">
-                  <p className="text-slate-500">No completed projects yet</p>
-                </CardContent>
-              </Card>
-            ) : (
-              pastProjects.map((project) => (
-                <Card key={project.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-slate-900">{project.address}</h3>
-                          <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            {project.status?.replace(/_/g, " ")}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-4 gap-4 mt-4 text-sm">
-                          <div>
-                            <p className="text-slate-400 text-xs">Roofer</p>
-                            <p className="font-semibold text-slate-900">{project.roofer_company}</p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400 text-xs">Total Cost</p>
-                            <p className="font-semibold text-slate-900">
-                              ${project.contract_amount?.toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400 text-xs">Completed</p>
-                            <p className="font-semibold text-slate-900">
-                              {project.actual_completion || "—"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate(createPageUrl("ProjectView") + `?id=${project.id}&role=homeowner`)}
-                      >
-                        View <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
     </div>
   );
