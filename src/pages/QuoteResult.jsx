@@ -513,15 +513,15 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Property Details (optional, improves analysis) */}
-              <PropertyDetailsForm value={propertyDetails} onChange={setPropertyDetails} />
-
               {/* Satellite + Roof Area Editor */}
               <RoofAreaEditor
                 address={quote.address}
                 sections={roofSections}
                 onSectionsChange={handleSectionsChange}
               />
+
+              {/* Property Details (optional, improves analysis) */}
+              <PropertyDetailsForm value={propertyDetails} onChange={setPropertyDetails} />
 
               {/* Current Material Detection */}
               {quote.roof_analysis?.current_material_label && (
