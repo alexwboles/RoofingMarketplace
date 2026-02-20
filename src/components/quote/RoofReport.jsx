@@ -12,6 +12,86 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+const FACET_COLORS = ["bg-blue-500","bg-violet-500","bg-emerald-500","bg-amber-500","bg-rose-500","bg-teal-500","bg-cyan-500","bg-orange-500"];
+const FACET_BORDER = ["border-blue-200","border-violet-200","border-emerald-200","border-amber-200","border-rose-200","border-teal-200","border-cyan-200","border-orange-200"];
+const FACET_BG = ["bg-blue-50","bg-violet-50","bg-emerald-50","bg-amber-50","bg-rose-50","bg-teal-50","bg-cyan-50","bg-orange-50"];
+const FACET_TEXT = ["text-blue-700","text-violet-700","text-emerald-700","text-amber-700","text-rose-700","text-teal-700","text-cyan-700","text-orange-700"];
+
+function FacetsBreakdown({ analysis }) {
+  const [selectedIdx, setSelectedIdx] = useState(null);
+  const sections = analysis.roof_sections || [];
+  const selected = selectedIdx !== null ? sections[selectedIdx] : null;
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <Layers className="w-4 h-4 text-indigo-600" />
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Facets / Planes Breakdown</p>
+        <span className="text-[10px] text-slate-400 ml-1">· tap a facet to view details</span>
+      </div>
+
+      {/* Facet tiles */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+        {sections.map((sec, i) => {
+          const pct = analysis.total_area_sqft ? Math.round((sec.area_sqft / analysis.total_area_sqft) * 100) : 0;
+          const isActive = selectedIdx === i;
+          return (
+            <button
+              key={i}
+              onClick={() => setSelectedIdx(isActive ? null : i)}
+              className={`rounded-xl border p-3 text-left transition-all ${
+                isActive
+                  ? `${FACET_BG[i % FACET_COLORS.length]} ${FACET_BORDER[i % FACET_COLORS.length]} ring-2 ring-offset-1 ring-current`
+                  : "bg-white border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <div className={`w-2.5 h-2.5 rounded-full ${FACET_COLORS[i % FACET_COLORS.length]}`} />
+                <span className={`text-xs font-semibold ${isActive ? FACET_TEXT[i % FACET_COLORS.length] : "text-slate-700"}`}>{sec.name}</span>
+                {isActive ? <ChevronUp className="w-3 h-3 ml-auto text-slate-400" /> : <ChevronDown className="w-3 h-3 ml-auto text-slate-400" />}
+              </div>
+              <p className="text-sm font-bold text-slate-900">{sec.area_sqft?.toLocaleString()} ft²</p>
+              <div className="mt-1.5 h-1 bg-slate-100 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${FACET_COLORS[i % FACET_COLORS.length]}`} style={{ width: `${pct}%` }} />
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">{pct}% of total</p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected facet detail */}
+      {selected && (
+        <div className={`rounded-xl border p-4 mb-3 ${FACET_BG[selectedIdx % FACET_COLORS.length]} ${FACET_BORDER[selectedIdx % FACET_COLORS.length]}`}>
+          <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${FACET_TEXT[selectedIdx % FACET_COLORS.length]}`}>{selected.name} — Details</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white/70 rounded-lg p-2 text-center">
+              <p className="text-xs text-slate-400">Area</p>
+              <p className="text-sm font-bold text-slate-800">{selected.area_sqft?.toLocaleString()} ft²</p>
+            </div>
+            <div className="bg-white/70 rounded-lg p-2 text-center">
+              <p className="text-xs text-slate-400">Pitch</p>
+              <p className="text-sm font-bold text-slate-800">{selected.pitch || analysis.pitch || "—"}</p>
+            </div>
+            <div className="bg-white/70 rounded-lg p-2 text-center">
+              <p className="text-xs text-slate-400">% of Roof</p>
+              <p className="text-sm font-bold text-slate-800">
+                {analysis.total_area_sqft ? Math.round((selected.area_sqft / analysis.total_area_sqft) * 100) : 0}%
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Totals */}
+      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+        <span className="text-xs font-semibold text-slate-500">Total Roof Area ({sections.length} facets)</span>
+        <span className="text-sm font-bold text-slate-900">{(analysis.total_area_sqft || 0).toLocaleString()} ft²</span>
+      </div>
+    </div>
+  );
+}
+
 const getComplexityColor = (c) => {
   if (c === "simple") return "bg-emerald-50 text-emerald-700 border-emerald-200";
   if (c === "complex") return "bg-red-50 text-red-700 border-red-200";
