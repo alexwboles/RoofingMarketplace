@@ -175,6 +175,9 @@ export default function ProjectView() {
             <TabsTrigger value="milestones">Milestones</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
+            {!isRoofer && (project.status === "completed" || project.status === "warranty") && (
+              <TabsTrigger value="review">⭐ Review</TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
