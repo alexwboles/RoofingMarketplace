@@ -23,7 +23,6 @@ import ReviewAnalytics from "@/components/analytics/ReviewAnalytics";
 import ResponseTimeAnalytics from "@/components/analytics/ResponseTimeAnalytics";
 
 function LeadCard({ lead, onStatusChange, onBidUpdate }) {
-  const [showPricing, setShowPricing] = useState(false);
   const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(lead.address)}&t=k&z=20`;
 
   return (
