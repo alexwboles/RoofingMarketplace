@@ -408,9 +408,23 @@ Calculate:
       // Generate materials and pricing
       const pricing = await generateMaterialsAndPricing(analysis, "architectural_shingle");
 
+      // Validate and normalize roof_sections
+      const validSections = (analysis.roof_sections || []).filter(s => s.area_sqft && s.area_sqft > 100);
+      if (validSections.length === 0 && analysis.total_area_sqft > 900) {
+        // Fallback: create a single section if none exist
+        validSections.push({
+          name: "Full Roof",
+          area_sqft: analysis.total_area_sqft,
+          pitch: analysis.pitch
+        });
+      }
+
       // Update the quote
       const updatedQuote = {
-        roof_analysis: analysis,
+        roof_analysis: {
+          ...analysis,
+          roof_sections: validSections
+        },
         materials_list: pricing.materials,
         materials_cost: pricing.materials_cost,
         labor_cost: pricing.labor_cost,
