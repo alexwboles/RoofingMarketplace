@@ -237,6 +237,13 @@ export default function ProjectView() {
               project={project}
             />
           </TabsContent>
+
+          {/* Review tab — homeowner only, on completed projects */}
+          {!isRoofer && (project.status === "completed" || project.status === "warranty") && (
+            <TabsContent value="review">
+              <ReviewForm project={project} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
