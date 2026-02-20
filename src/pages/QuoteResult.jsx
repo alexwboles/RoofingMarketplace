@@ -125,6 +125,12 @@ export default function QuoteResult() {
   const quoteId = urlParams.get("id");
   const navigate = useNavigate();
 
+  const getSatelliteImageUrl = (address) => {
+    const encoded = encodeURIComponent(address);
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${encoded}&zoom=20&size=640x360&maptype=satellite&key=`;
+    // We'll use the embed approach since no API key — store the Google Maps embed screenshot URL as reference
+  };
+
   const analyzeRoof = useCallback(async (quoteData, extraDetails = {}) => {
     const detailsContext = [
       extraDetails.home_sqft ? `Living area square footage: ${extraDetails.home_sqft} sq ft` : "",
@@ -133,60 +139,96 @@ export default function QuoteResult() {
       extraDetails.upgrades ? `Desired upgrades/add-ons: ${extraDetails.upgrades}` : "",
     ].filter(Boolean).join("\n");
 
+    // Build satellite image URL using Google's open satellite tile (no API key required for embed reference)
+    const satelliteUrl = `https://maps.google.com/maps?q=${encodeURIComponent(quoteData.address)}&t=k&z=20`;
+
     const analysis = await base44.integrations.Core.InvokeLLM({
       add_context_from_internet: true,
-      prompt: `You are a professional roofing estimator with 20+ years of field experience and access to satellite imagery data. Analyze this specific property and produce a highly accurate roof measurement and difficulty report.
+      prompt: `You are a professional roofing estimator with 20+ years of field experience. You have access to satellite imagery and public property records. Analyze this SPECIFIC property and produce a highly accurate, detailed roof measurement and condition report.
 
 Property Address: "${quoteData.address}"
+Satellite/aerial view: ${satelliteUrl}
 ${detailsContext ? `\nHomeowner-provided details:\n${detailsContext}` : ""}
 
-STEP 1 — RESEARCH THIS PROPERTY:
-Use your internet access to look up:
-- The actual home size / footprint from public records or real estate listings for this address
-- The typical housing style, age, and construction in this specific neighborhood/zip code
-- Local climate and weather patterns that affect roofing material choices
-- Street view / satellite knowledge of the roof style
+CRITICAL INSTRUCTIONS — READ CAREFULLY:
+You MUST use your internet access to look up this exact address. Do NOT make up generic numbers. Every measurement must be grounded in real data.
 
-STEP 2 — CALCULATE ROOF AREA WITH PITCH & OVERHANG:
-Pitch multipliers (slope / run):
-  2/12 = 1.028 | 3/12 = 1.054 | 4/12 = 1.054 | 5/12 = 1.083
-  6/12 = 1.118 | 7/12 = 1.158 | 8/12 = 1.202 | 10/12 = 1.302 | 12/12 = 1.414
+STEP 1 — DEEP PROPERTY RESEARCH:
+Search for this address specifically:
+- Pull public records: county assessor, Zillow, Redfin, Google Maps, Bing Maps satellite view
+- Find: year built, living area (sq ft), lot size, number of stories, building footprint
+- Look at satellite imagery to identify: roof shape (gable/hip/gambrel/flat/mansard), number of distinct roof planes, visible penetrations
+- Research local weather: snowload, wind zone, hurricane risk, hail frequency — all affect material recommendations
+- If it's a subdivision, research the typical home model for that neighborhood/era
 
-Overhang allowance: typical residential overhang is 12–24 inches. Add 1.5–2.5% to footprint per overhang foot.
-Formula: roof_area = (footprint + overhang_area) × pitch_multiplier × waste_factor
-Waste factor: simple=1.08, moderate=1.12, complex=1.15
+STEP 2 — PRECISE ROOF AREA CALCULATION (show your work):
+Use the actual footprint from records. NEVER estimate below 900 sq ft for a single-family home.
+
+Pitch multipliers:
+  2/12=1.028 | 3/12=1.054 | 4/12=1.068 | 5/12=1.083 | 6/12=1.118 | 7/12=1.158 | 8/12=1.202 | 9/12=1.250 | 10/12=1.302 | 12/12=1.414
+
+Steps:
+1. footprint_sqft = living_area / stories (or from records)
+2. overhang_area = perimeter × (overhang_inches/12) — typical 12–24" overhang
+3. gross_deck = footprint_sqft + overhang_area
+4. sloped_area = gross_deck × pitch_multiplier
+5. total_area_sqft = sloped_area × waste_factor (simple=1.08, moderate=1.12, complex=1.15)
 
 ${extraDetails.home_sqft
-  ? `The homeowner says their living area is ${extraDetails.home_sqft} sq ft. 
-     Footprint ≈ living area (for single story) or living area / stories (for multi-story).
-     COMPUTE step by step: footprint → add overhang → × pitch_multiplier → × waste_factor = total_area_sqft.`
-  : `Estimate the home footprint from public records or typical housing for this zip code. NEVER guess below 1,000 sq ft for a single-family home.`}
+  ? `Homeowner confirmed living area = ${extraDetails.home_sqft} sq ft. Use this as your footprint base.`
+  : `Use public records for footprint. Cross-check with Zillow/assessor data.`}
 
-STEP 3 — IDENTIFY CURRENT ROOF MATERIAL from satellite/public data.
+STEP 3 — SATELLITE VISUAL INSPECTION:
+Examine the satellite image carefully. Look for and count:
+- Chimneys (brick/metal flue caps)
+- Plumbing vent pipes (small 3–6" round protrusions, often 2–4 per house)
+- Skylights (rectangular glass panels, often 1–4 on newer homes)
+- HVAC curbs or units
+- Solar panels (rectangular arrays)
+- Ridge vents (continuous cap along ridge)
+- Box/turtle vents (small rectangular raised vents)
+- Satellite dishes
+- Trees overhanging the roof (access difficulty)
+- Neighbor proximity / tight access
 
-STEP 4 — DIFFICULTY ASSESSMENT:
-Assign a difficulty_score from 1–10 and list specific difficulty_factors:
-- Steep pitch (>8/12) adds 20–30% labor
-- High stories (2+) adds 15% labor
-- Many valleys/penetrations add complexity
-- Poor access or obstacles (trees, tight lot) increase risk
-- Existing deck damage or multiple layers to tear off
-- Return: difficulty_score (1=trivial, 10=extreme), difficulty_factors (array of strings), pitch_multiplier (the numeric value used), overhang_inches (estimated overhang depth), waste_factor (value used)
+STEP 4 — ROOF CONDITION ASSESSMENT:
+From satellite and any available street view data, assess:
+- Color uniformity (patchy = aging/storm damage)
+- Moss/algae/lichen (dark streaking, especially north-facing slopes)
+- Missing or lifted shingles (visible gaps or raised edges)
+- Sagging or uneven ridgeline
+- Flashing condition around penetrations
+- Gutters/fascia condition
+- Estimate age if not from records
 
-STEP 5 — GENERATE ACCURATE MEASUREMENTS consistent with total_area_sqft.
+STEP 5 — DIFFICULTY SCORE (1–10):
+Factor in:
+- Pitch: ≤3/12=easy(+0), 4–6/12=moderate(+2), 7–9/12=steep(+4), ≥10/12=very steep(+6)
+- Stories: 1=+0, 2=+2, 3+=+4
+- Complexity: simple=+0, moderate=+2, complex=+4
+- Obstacles per 5: +1 each group
+- Poor access (trees/tight lot): +1–2
 
-Return all fields including:
-- total_area_sqft, pitch, pitch_multiplier, overhang_inches, waste_factor
-- difficulty_score (1-10), difficulty_factors (string array)
+STEP 6 — PER-SECTION BREAKDOWN:
+roof_sections MUST:
+- Sum exactly to total_area_sqft
+- Use compass/directional names: "Front (South) Slope", "Back (North) Slope", "Left (West) Hip", "Right (East) Hip", "Garage Roof", etc.
+- Include individual pitch per section if different slopes are visible
+
+Return ALL of the following fields with real, researched values:
+- total_area_sqft (number, calculated step-by-step)
+- pitch (string, e.g. "6/12"), pitch_multiplier, overhang_inches, waste_factor
+- footprint_sqft (number — the raw footprint before pitch/overhang)
+- difficulty_score (1–10), difficulty_factors (detailed string array)
 - num_facets, num_peaks, num_valleys, num_hips
 - ridge_length_ft, eave_length_ft, rake_length_ft, valley_length_ft
-- obstacles: CAREFULLY examine the roof surface for any protrusions or penetrations. Common ones to look for: chimney/flue, plumbing vent pipes (small round protrusions), skylights (rectangular glass panels), HVAC units, solar panels, satellite dishes, ridge vents, box vents/turtle vents. Use street-view and satellite data. If you can confirm any from satellite or public records/street view data, include them. Each item: {type: string, count: number}. If truly nothing is visible or detectable, return an empty array.
-- condition_notes: Brief notes on visible roof condition if detectable (e.g., "algae streaking visible on north slopes", "appears newer construction", "granule loss pattern consistent with aging shingles")
-- estimated_remaining_life_years: estimated years of remaining useful life based on material type and apparent condition (number)
-- complexity: "simple" | "moderate" | "complex"
-- stories, current_material, current_material_label
-- roof_sections: [{name, area_sqft, pitch}] — MUST sum to total_area_sqft. Use directional names (Front Slope, Back Slope, Left Hip, Right Hip, Garage Roof, etc.) so sections can be auto-positioned on the satellite view.
-- ai_suggestions: 2-3 specific tips for this property/climate`,
+- obstacles: [{type, count}] — list every identifiable penetration; empty array only if truly none visible
+- condition_notes (detailed string — describe what you see on the satellite image)
+- estimated_remaining_life_years (number)
+- complexity ("simple"|"moderate"|"complex")
+- stories (number), current_material (string), current_material_label (string)
+- roof_sections: [{name, area_sqft, pitch}]
+- ai_suggestions: 3 specific, actionable tips for THIS property/climate (not generic advice)`,
       response_json_schema: {
         type: "object",
         properties: {
