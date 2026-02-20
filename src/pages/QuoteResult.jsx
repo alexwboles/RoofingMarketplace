@@ -610,30 +610,19 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
               {/* Property Details (optional, improves analysis) */}
               <PropertyDetailsForm value={propertyDetails} onChange={setPropertyDetails} />
 
-              {/* Current Material Detection */}
-              {quote.roof_analysis?.current_material_label && (
-                <div className="bg-white rounded-2xl border border-slate-200 p-4 flex items-center gap-3">
-                  <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center shrink-0">
-                    <span className="text-lg">🏠</span>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">Detected Current Roof Material</p>
-                    <p className="text-sm font-semibold text-slate-800">{quote.roof_analysis.current_material_label}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Roof Report (editable) — with AI suggestions inside */}
+              {/* Roof Report (editable) */}
               <RoofReport
                 analysis={quote.roof_analysis}
                 onSave={handleAnalysisEdit}
-                aiSuggestions={quote.roof_analysis?.ai_suggestions}
               />
+
+              {/* Contact Form — directly below the report */}
+              <ContactForm onSubmit={(info) => handleContactSubmit({ ...info, payment_type: paymentType })} isLoading={isSubmitting} />
 
               {/* Materials List */}
               <MaterialsList materials={quote.materials_list} />
 
-              {/* Price Estimate — at bottom of report */}
+              {/* Price Estimate */}
               <PriceEstimate
                 materialsCost={quote.materials_cost}
                 laborCost={quote.labor_cost}
@@ -642,9 +631,6 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
                 priceRangeHigh={quote.price_range_high}
                 materialType={materialType}
               />
-
-              {/* Contact Form */}
-              <ContactForm onSubmit={(info) => handleContactSubmit({ ...info, payment_type: paymentType })} isLoading={isSubmitting} />
             </div>
           )}
         </div>
