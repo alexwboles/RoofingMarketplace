@@ -304,7 +304,7 @@ export default function RoofAreaEditor({ address, sections, onSectionsChange }) 
 
         {!localSections.length && editing && (
           <div className="p-4 bg-blue-50 border-t border-blue-100 text-center">
-            <p className="text-xs text-blue-700">Click "Add Section" to start drawing roof sections on the map.</p>
+            <p className="text-xs text-blue-700">Click "Add Section" to add a roof section, then drag the corner handles to position it.</p>
           </div>
         )}
 
