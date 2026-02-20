@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import DocumentVerification from "@/components/roofer/DocumentVerification";
 
 export default function RooferSignup() {
   const navigate = useNavigate();
