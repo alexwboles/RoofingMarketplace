@@ -24,6 +24,8 @@ export default function RooferSignup() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verification, setVerification] = useState(null); // AI verification result
   const [pricingSuggestion, setPricingSuggestion] = useState(null);
+  const [step, setStep] = useState(1); // 1: form, 2: document verification
+  const [createdRooferId, setCreatedRooferId] = useState(null);
   const [form, setForm] = useState({
     company_name: "",
     contact_name: "",
