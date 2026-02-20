@@ -452,8 +452,12 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Satellite Image */}
-              <SatelliteImageViewer address={quote.address} />
+              {/* Satellite + Roof Area Editor */}
+              <RoofAreaEditor
+                address={quote.address}
+                sections={roofSections}
+                onSectionsChange={handleSectionsChange}
+              />
 
               {/* Price Estimate */}
               <PriceEstimate
