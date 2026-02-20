@@ -153,9 +153,9 @@ Based on all findings, provide: overall_risk: "low", "medium", or "high", and re
           <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-8 h-8 text-emerald-600" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Application Submitted!</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">All Set!</h2>
           <p className="text-slate-500">
-            We'll review your application and get back to you within 1-2 business days.
+            Your documents have been verified and your application is under review. We'll get back to you within 1-2 business days.
           </p>
           <Button
             onClick={() => navigate(createPageUrl("Home"))}
@@ -164,6 +164,35 @@ Based on all findings, provide: overall_risk: "low", "medium", or "high", and re
             Back to Home
           </Button>
         </motion.div>
+      </div>
+    );
+  }
+
+  if (step === 2 && createdRooferId) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800 py-16 px-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Hammer className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white">Verify Your Documents</h1>
+                <p className="text-slate-300 mt-1">
+                  Final step: upload your license and insurance certificate.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-2xl mx-auto px-4 -mt-6 pb-8">
+          <DocumentVerification
+            roofer_id={createdRooferId}
+            onVerificationComplete={handleVerificationComplete}
+          />
+        </div>
       </div>
     );
   }
