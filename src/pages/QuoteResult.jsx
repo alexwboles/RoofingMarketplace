@@ -192,7 +192,7 @@ Area calculation formula:
 
 ${extraDetails.home_sqft
   ? `Homeowner confirmed living area = ${extraDetails.home_sqft} sq ft. Use this as your footprint base.`
-  : `Use public records for footprint. Cross-check with Zillow/assessor data. For a typical ${analysis?.stories || 1}-story home, estimate perimeter at 150-200 ft.`}
+  : `Use public records for footprint. Cross-check with Zillow/assessor data. For a typical 1-2 story home, estimate perimeter at 150-200 ft.`}
 
 Show calculation steps: "Footprint: X sq ft, Perimeter: Y ft, Overhang area: Z sq ft, Gross: W sq ft, Sloped (×1.118): V sq ft, Final (×1.12 waste): TOTAL sq ft"
 
