@@ -169,20 +169,42 @@ export default function RoofReport({ analysis, onSave }) {
           </div>
         ))}
 
-        {/* Complexity - editable */}
-        {editing && (
-          <div>
-            <Label className="text-xs text-slate-500 mb-1 block">Roof Complexity</Label>
-            <Select value={draft.complexity} onValueChange={(v) => updateField("complexity", v)}>
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="simple">Simple</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="complex">Complex</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* Stories + Complexity - always editable-toggle */}
+        {editing ? (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-slate-500 mb-1 block">Number of Stories</Label>
+              <Select value={String(draft.stories ?? 1)} onValueChange={(v) => updateField("stories", parseInt(v))}>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 story</SelectItem>
+                  <SelectItem value="2">2 stories</SelectItem>
+                  <SelectItem value="3">3 stories</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-slate-500 mb-1 block">Roof Complexity</Label>
+              <Select value={draft.complexity} onValueChange={(v) => updateField("complexity", v)}>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="simple">Simple</SelectItem>
+                  <SelectItem value="moderate">Moderate</SelectItem>
+                  <SelectItem value="complex">Complex</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-slate-50 rounded-xl p-3">
+              <p className="text-xs text-slate-400 mb-1">Stories</p>
+              <p className="text-base font-bold text-slate-800">{analysis.stories ?? 1}</p>
+            </div>
           </div>
         )}
 
