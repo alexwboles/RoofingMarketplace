@@ -4,8 +4,8 @@ import { createPageUrl } from "@/utils";
 import { Home, Hammer, LayoutDashboard, FolderOpen } from "lucide-react";
 
 export default function Layout({ children, currentPageName }) {
-  // Hide layout chrome on full-bleed pages
-  const fullBleedPages = ["Home", "QuoteResult", "RooferSignup"];
+  // Hide layout chrome on full-bleed pages (only Home page)
+  const fullBleedPages = ["Home"];
   if (fullBleedPages.includes(currentPageName)) {
     return <>{children}</>;
   }
