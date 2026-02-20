@@ -66,13 +66,13 @@ function LeadCard({ lead, onStatusChange, onBidUpdate }) {
             )}
           </div>
           <a
-            href={satelliteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] text-blue-500 hover:text-blue-700 flex items-center gap-0.5 shrink-0"
-          >
-            <Satellite className="w-3 h-3" /> View Map
-          </a>
+              href={mapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-blue-500 hover:text-blue-700 flex items-center gap-0.5 shrink-0"
+            >
+              <Satellite className="w-3 h-3" /> View Map
+            </a>
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-4">
