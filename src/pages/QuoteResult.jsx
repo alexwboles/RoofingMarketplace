@@ -408,8 +408,8 @@ Calculate:
       // Generate materials and pricing
       const pricing = await generateMaterialsAndPricing(analysis, "architectural_shingle");
 
-      // Validate and normalize roof_sections
-      const validSections = (analysis.roof_sections || []).filter(s => s.area_sqft && s.area_sqft > 100);
+      // Validate and normalize roof_sections — filter for realistic values
+      const validSections = (analysis.roof_sections || []).filter(s => s.area_sqft && s.area_sqft >= 200);
       if (validSections.length === 0 && analysis.total_area_sqft > 900) {
         // Fallback: create a single section if none exist
         validSections.push({
@@ -628,7 +628,7 @@ Each should have: company_name, contact_name, phone (format: (555) 555-XXXX), ra
       await base44.integrations.Core.SendEmail({
         to: contactInfo.email,
         subject: "Your Roofing Project is Confirmed!",
-        body: `Hi ${contactInfo?.name},\n\nGreat news! You've selected ${proposal.roofer_company} for your roof replacement at ${quote.address}.\n\nProject total: $${proposal.roofer_bid?.toLocaleString()}\n\nYou can track your project progress at any time.\n\nBest,\nRoofQuote AI Team`,
+        body: `Hi ${contactInfo?.name},\n\nGreat news! You've selected ${proposal.roofer_company} for your roof replacement at ${quote.address}.\n\nProject total: $${proposal.roofer_bid?.toLocaleString()}\n\nYou can track your project progress at any time.\n\nBest,\nRoofing Marketplace Team`,
       });
     }
 
