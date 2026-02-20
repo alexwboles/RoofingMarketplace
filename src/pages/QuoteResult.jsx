@@ -304,11 +304,12 @@ Calculate:
 
       await base44.entities.RoofQuote.update(quoteId, updatedQuote);
 
+      const secTotal = (analysis.roof_sections || []).reduce((sum, s) => sum + (s.area_sqft || 0), 0);
       const initialSections = (analysis.roof_sections || []).map((s, i) => ({
         name: s.name,
         area_sqft: s.area_sqft,
         color: i % 6,
-        points: generateDefaultPolygon(i, analysis.roof_sections.length),
+        points: generateRoofPolygon(i, analysis.roof_sections.length, secTotal > 0 ? s.area_sqft / secTotal : 1, analysis.complexity),
       }));
       setRoofSections(initialSections);
 
