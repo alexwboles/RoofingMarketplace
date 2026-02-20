@@ -228,6 +228,7 @@ export default function ProjectView() {
               senderName={isRoofer ? project.roofer_name : project.homeowner_name}
               senderRole={role}
               onSend={handleSendMessage}
+              project={project}
             />
           </TabsContent>
         </Tabs>
