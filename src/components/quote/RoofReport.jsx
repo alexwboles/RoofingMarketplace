@@ -400,47 +400,7 @@ export default function RoofReport({ analysis, onSave, aiSuggestions }) {
           </div>
         )}
 
-        {/* Summary row */}
-        {!editing && (
-          <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-4 text-white">
-            <p className="text-xs text-slate-400 mb-2 uppercase tracking-wider">Report Summary</p>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center">
-              <div>
-                <p className="text-xl font-bold">{(analysis.total_area_sqft || 0).toLocaleString()}</p>
-                <p className="text-xs text-slate-400">Total sq ft</p>
-              </div>
-              <div>
-                <p className="text-xl font-bold">{analysis.pitch}</p>
-                <p className="text-xs text-slate-400">Pitch</p>
-              </div>
-              <div>
-                <p className="text-xl font-bold">{analysis.pitch_multiplier ?? "—"}</p>
-                <p className="text-xs text-slate-400">Pitch ×</p>
-              </div>
-              <div>
-                <p className="text-xl font-bold">{analysis.stories ?? 1}</p>
-                <p className="text-xs text-slate-400">Stories</p>
-              </div>
-              <div>
-                <p className="text-xl font-bold">{analysis.difficulty_score ?? "—"}</p>
-                <p className="text-xs text-slate-400">Difficulty</p>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* AI Recommendations — shown at bottom of report */}
-        {!editing && aiSuggestions?.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
-            <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">AI Recommendations for Your Property</p>
-            {aiSuggestions.map((s, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <span className="text-amber-500 mt-0.5 shrink-0">✦</span>
-                <p className="text-sm text-amber-900">{s}</p>
-              </div>
-            ))}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
