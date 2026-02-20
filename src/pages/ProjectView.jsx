@@ -66,6 +66,11 @@ export default function ProjectView() {
     toast.success("Milestone updated!");
   };
 
+  const handleMilestonesChange = async (milestones) => {
+    await save({ milestones });
+    toast.success("Milestones saved!");
+  };
+
   const handleSendMessage = async (msg) => {
     const messages = [...(project.messages || []), msg];
     await save({ messages });
