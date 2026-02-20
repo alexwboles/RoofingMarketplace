@@ -162,7 +162,7 @@ export default function RooferDashboard() {
     { label: "Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-violet-600 bg-violet-50" },
   ];
 
-  // LeadCard rendered via standalone component below (see LeadCard definition outside RooferDashboard)
+
 
   const ProjectCard = ({ project }) => (
     <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl("ProjectView") + `?id=${project.id}&role=roofer`)}>
