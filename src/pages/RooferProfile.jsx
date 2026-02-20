@@ -83,6 +83,7 @@ export default function RooferProfile() {
   const reviewCount = reviews.length || roofer.total_reviews || 0;
   const wonLeads = leads.filter((l) => l.status === "won" || l.status === "accepted").length;
 
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Hero banner */}
