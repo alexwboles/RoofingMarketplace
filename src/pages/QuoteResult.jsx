@@ -215,19 +215,20 @@ roof_sections MUST:
 - Use compass/directional names: "Front (South) Slope", "Back (North) Slope", "Left (West) Hip", "Right (East) Hip", "Garage Roof", etc.
 - Include individual pitch per section if different slopes are visible
 
+CRITICAL RULE: total_area_sqft MUST be at least 900 for any single-family home. A typical US single-family home is 1,500–3,000 sq ft living area with a roof area of 1,800–3,500 sq ft after pitch and waste. If your research yields a small number, double-check your math. A 1,500 sq ft living area with 6/12 pitch = ~1,500 × 1.118 × 1.12 waste ≈ 1,878 sq ft minimum. NEVER return total_area_sqft less than 900.
+
 Return ALL of the following fields with real, researched values:
-- total_area_sqft (number, calculated step-by-step)
-- pitch (string, e.g. "6/12"), pitch_multiplier, overhang_inches, waste_factor
-- footprint_sqft (number — the raw footprint before pitch/overhang)
+- total_area_sqft (number — MINIMUM 900, typically 1,500–4,000 for a house)
+- pitch (string, e.g. "6/12"), pitch_multiplier (number), overhang_inches (number, default 18), waste_factor (number, default 1.10)
 - difficulty_score (1–10), difficulty_factors (detailed string array)
-- num_facets, num_peaks, num_valleys, num_hips
-- ridge_length_ft, eave_length_ft, rake_length_ft, valley_length_ft
+- num_facets (number), num_peaks (number), num_valleys (number), num_hips (number)
+- ridge_length_ft (number), eave_length_ft (number), rake_length_ft (number), valley_length_ft (number)
 - obstacles: [{type, count}] — list every identifiable penetration; empty array only if truly none visible
 - condition_notes (detailed string — describe what you see on the satellite image)
 - estimated_remaining_life_years (number)
 - complexity ("simple"|"moderate"|"complex")
 - stories (number), current_material (string), current_material_label (string)
-- roof_sections: [{name, area_sqft, pitch}]
+- roof_sections: [{name, area_sqft, pitch}] — sections must sum to total_area_sqft
 - ai_suggestions: 3 specific, actionable tips for THIS property/climate (not generic advice)`,
       response_json_schema: {
         type: "object",
