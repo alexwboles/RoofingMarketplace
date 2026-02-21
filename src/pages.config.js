@@ -50,13 +50,13 @@
 import BidSubmission from './pages/BidSubmission';
 import Home from './pages/Home';
 import HomeownerDashboard from './pages/HomeownerDashboard';
+import Inbox from './pages/Inbox';
 import ProjectView from './pages/ProjectView';
 import QuoteResult from './pages/QuoteResult';
 import RooferDashboard from './pages/RooferDashboard';
 import RooferProfile from './pages/RooferProfile';
 import RooferSignup from './pages/RooferSignup';
 import RoofersList from './pages/RoofersList';
-import Inbox from './pages/Inbox';
 import __Layout from './Layout.jsx';
 
 
@@ -64,13 +64,13 @@ export const PAGES = {
     "BidSubmission": BidSubmission,
     "Home": Home,
     "HomeownerDashboard": HomeownerDashboard,
+    "Inbox": Inbox,
     "ProjectView": ProjectView,
     "QuoteResult": QuoteResult,
     "RooferDashboard": RooferDashboard,
     "RooferProfile": RooferProfile,
     "RooferSignup": RooferSignup,
     "RoofersList": RoofersList,
-    "Inbox": Inbox,
 }
 
 export const pagesConfig = {
