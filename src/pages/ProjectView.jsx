@@ -201,6 +201,7 @@ export default function ProjectView() {
         <Tabs defaultValue="overview">
           <TabsList className="bg-white border mb-6 flex-wrap h-auto gap-1 py-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="details">Project Details</TabsTrigger>
             <TabsTrigger value="milestones">Milestones</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
