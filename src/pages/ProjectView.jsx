@@ -305,19 +305,22 @@ export default function ProjectView() {
             </TabsContent>
 
           <TabsContent value="details" className="space-y-5">
-            {/* Satellite Image */}
-            {project.roof_analysis?.satellite_image_url || project.satellite_image_url ? (
-              <Card>
-                <CardContent className="pt-5">
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Satellite Image</p>
-                  <img
-                    src={project.roof_analysis?.satellite_image_url || project.satellite_image_url}
-                    alt="Satellite view of property"
-                    className="w-full rounded-xl object-cover max-h-72"
+            {/* Aerial / Satellite Image */}
+            <Card>
+              <CardContent className="pt-5">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Aerial View</p>
+                <div className="rounded-xl overflow-hidden border border-slate-100" style={{ height: 320 }}>
+                  <iframe
+                    title="Aerial view"
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(project.address)}&t=k&z=20&output=embed`}
+                    allowFullScreen
                   />
-                </CardContent>
-              </Card>
-            ) : null}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Roof Report */}
             {project.roof_analysis ? (
