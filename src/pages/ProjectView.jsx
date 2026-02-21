@@ -427,6 +427,13 @@ export default function ProjectView() {
             />
           </TabsContent>
 
+          {/* Invoice tab — completed projects */}
+          {(project.status === "completed" || project.status === "warranty") && (
+            <TabsContent value="invoice">
+              <ProjectInvoice project={project} />
+            </TabsContent>
+          )}
+
           {/* Review tab — homeowner only, on completed projects */}
           {!isRoofer && (project.status === "completed" || project.status === "warranty") && (
             <TabsContent value="review">
