@@ -56,6 +56,7 @@ import RooferDashboard from './pages/RooferDashboard';
 import RooferProfile from './pages/RooferProfile';
 import RooferSignup from './pages/RooferSignup';
 import RoofersList from './pages/RoofersList';
+import Inbox from './pages/Inbox';
 import __Layout from './Layout.jsx';
 
 
@@ -69,6 +70,7 @@ export const PAGES = {
     "RooferProfile": RooferProfile,
     "RooferSignup": RooferSignup,
     "RoofersList": RoofersList,
+    "Inbox": Inbox,
 }
 
 export const pagesConfig = {
