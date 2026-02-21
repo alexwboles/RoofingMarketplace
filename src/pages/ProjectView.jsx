@@ -15,6 +15,7 @@ import MessageThread from "@/components/messaging/MessageThread";
 import ReviewForm from "@/components/project/ReviewForm";
 import MaterialSelector from "@/components/project/MaterialSelector";
 import PhotoGallery from "@/components/project/PhotoGallery";
+import RoofReport from "@/components/quote/RoofReport";
 import { toast } from "sonner";
 
 const statusColors = {
