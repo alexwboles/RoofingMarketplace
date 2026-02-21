@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import MilestoneTracker from "@/components/project/MilestoneTracker";
 import PaymentPanel from "@/components/project/PaymentPanel";
-import ProjectMessaging from "@/components/project/ProjectMessaging";
+import MessageThread from "@/components/messaging/MessageThread";
 import ReviewForm from "@/components/project/ReviewForm";
 import MaterialSelector from "@/components/project/MaterialSelector";
 import PhotoGallery from "@/components/project/PhotoGallery";
