@@ -46,13 +46,21 @@ export default function Layout({ children, currentPageName }) {
               Homeowner
             </Link>
             <Link
-              to={createPageUrl("RooferDashboard")}
-              className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5"
-            >
-              <HammerIcon className="w-3.5 h-3.5" />
-              Roofer
-            </Link>
-          </div>
+                to={createPageUrl("RooferDashboard")}
+                className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5"
+              >
+                <HammerIcon className="w-3.5 h-3.5" />
+                Roofer
+              </Link>
+              <Link
+                to={createPageUrl("Inbox")}
+                className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                Messages
+                <UnreadBadge email={userEmail} />
+              </Link>
+            </div>
         </div>
       </nav>
 
