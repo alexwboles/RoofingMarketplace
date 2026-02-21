@@ -313,6 +313,7 @@ export default function RooferDashboard() {
                <TabsTrigger value="completed">Completed ({completedProjects.length})</TabsTrigger>
                <TabsTrigger value="appointments"><Calendar className="w-3.5 h-3.5 mr-1" /> Appointments</TabsTrigger>
                <TabsTrigger value="analytics"><BarChart2 className="w-3.5 h-3.5 mr-1" /> Analytics</TabsTrigger>
+               <TabsTrigger value="profile">My Profile</TabsTrigger>
                <TabsTrigger value="settings">Settings</TabsTrigger>
              </TabsList>
 
