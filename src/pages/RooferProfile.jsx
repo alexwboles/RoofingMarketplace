@@ -234,16 +234,56 @@ export default function RooferProfile() {
           </Card>
         </div>
 
+        {/* Bio */}
+        {roofer.bio && (
+          <Card className="border-slate-200">
+            <CardContent className="pt-5">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">About</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{roofer.bio}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Credentials */}
-        {roofer.license_number && (
-          <Card className="border-emerald-200 bg-emerald-50">
-            <CardContent className="pt-4 pb-4 flex items-center gap-3">
-              <Shield className="w-5 h-5 text-emerald-600 shrink-0" />
+        <div className="flex flex-wrap gap-3">
+          {roofer.license_number && (
+            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5">
+              <Shield className="w-4 h-4 text-emerald-600 shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-emerald-800">Licensed & Insured</p>
+                <p className="text-xs font-semibold text-emerald-800">Licensed & Insured</p>
                 <p className="text-xs text-emerald-600">License #{roofer.license_number}</p>
               </div>
-              <Award className="w-5 h-5 text-emerald-500 ml-auto" />
+            </div>
+          )}
+          {roofer.years_in_business && (
+            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5">
+              <Award className="w-4 h-4 text-blue-600 shrink-0" />
+              <div>
+                <p className="text-xs font-semibold text-blue-800">{roofer.years_in_business}+ Years</p>
+                <p className="text-xs text-blue-600">In Business</p>
+              </div>
+            </div>
+          )}
+          {roofer.certifications?.map((cert, i) => (
+            <div key={i} className="flex items-center gap-2 bg-violet-50 border border-violet-200 rounded-xl px-4 py-2.5">
+              <CheckCircle2 className="w-4 h-4 text-violet-600 shrink-0" />
+              <p className="text-xs font-semibold text-violet-800">{cert}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Portfolio Gallery */}
+        {roofer.portfolio_images?.length > 0 && (
+          <Card className="border-slate-200">
+            <CardContent className="pt-5">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Portfolio</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {roofer.portfolio_images.map((url, i) => (
+                  <div key={i} className="aspect-square rounded-xl overflow-hidden border border-slate-200">
+                    <img src={url} alt={`Portfolio ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         )}
