@@ -208,6 +208,9 @@ export default function ProjectView() {
             <TabsTrigger value="messages">Messages</TabsTrigger>
             {!isRoofer && <TabsTrigger value="materials">🏠 Materials</TabsTrigger>}
             <TabsTrigger value="photos">📸 Photos</TabsTrigger>
+            {(project.status === "completed" || project.status === "warranty") && (
+              <TabsTrigger value="invoice">🧾 Invoice</TabsTrigger>
+            )}
             {!isRoofer && (project.status === "completed" || project.status === "warranty") && (
               <TabsTrigger value="review">⭐ Review</TabsTrigger>
             )}
