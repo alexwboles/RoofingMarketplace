@@ -311,13 +311,22 @@ export default function ProjectView() {
           </TabsContent>
 
           <TabsContent value="messages">
-            <ProjectMessaging
-              messages={project.messages || []}
-              senderName={isRoofer ? project.roofer_name : project.homeowner_name}
-              senderRole={role}
-              onSend={handleSendMessage}
-              project={project}
-            />
+            <div className="bg-white rounded-xl border border-slate-100 overflow-hidden" style={{ height: 520 }}>
+              {currentUser ? (
+                <MessageThread
+                  conversationId={`project_${projectId}`}
+                  currentUserEmail={currentUser.email}
+                  currentUserName={isRoofer ? (project.roofer_name || project.roofer_company) : project.homeowner_name}
+                  currentUserRole={role}
+                  recipientName={isRoofer ? project.homeowner_name : (project.roofer_name || project.roofer_company)}
+                  projectAddress={project.address}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-400 text-sm">
+                  Please log in to send messages.
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           {/* Materials tab — homeowner only */}
