@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import AppointmentManager from "@/components/appointments/AppointmentManager";
 import ServiceAreaEditor from "@/components/roofer/ServiceAreaEditor";
+import RooferProfileEditor from "@/components/roofer/RooferProfileEditor";
 import ConversionRateChart from "@/components/analytics/ConversionRateChart";
 import ProfitabilityChart from "@/components/analytics/ProfitabilityChart";
 import ReviewAnalytics from "@/components/analytics/ReviewAnalytics";
