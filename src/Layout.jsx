@@ -14,6 +14,9 @@ const Logo = () => (
 );
 
 export default function Layout({ children, currentPageName }) {
+  const [userEmail, setUserEmail] = useState(null);
+  useEffect(() => { base44.auth.me().then(u => setUserEmail(u?.email)).catch(() => {}); }, []);
+
   // Hide layout chrome on full-bleed pages (only Home page)
   const fullBleedPages = ["Home"];
   if (fullBleedPages.includes(currentPageName)) {
