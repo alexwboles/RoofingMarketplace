@@ -310,6 +310,14 @@ export default function ProjectView() {
             <MilestoneTracker milestones={project.milestones || []} isRoofer={isRoofer} onUpdateMilestone={handleUpdateMilestone} project={project} onMilestonesChange={handleMilestonesChange} />
             </TabsContent>
 
+          <TabsContent value="contract">
+            <ProjectContract
+              project={project}
+              isRoofer={isRoofer}
+              onSave={save}
+            />
+          </TabsContent>
+
           <TabsContent value="details" className="space-y-5">
             {/* Aerial / Satellite Image */}
             <Card>
