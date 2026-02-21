@@ -17,6 +17,7 @@ import MaterialSelector from "@/components/project/MaterialSelector";
 import PhotoGallery from "@/components/project/PhotoGallery";
 import RoofReport from "@/components/quote/RoofReport";
 import ProjectInvoice from "@/components/project/ProjectInvoice";
+import ProjectContract from "@/components/project/ProjectContract";
 import { toast } from "sonner";
 
 const statusColors = {
