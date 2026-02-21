@@ -304,6 +304,74 @@ export default function ProjectView() {
             <MilestoneTracker milestones={project.milestones || []} isRoofer={isRoofer} onUpdateMilestone={handleUpdateMilestone} project={project} onMilestonesChange={handleMilestonesChange} />
             </TabsContent>
 
+          <TabsContent value="details" className="space-y-5">
+            {/* Satellite Image */}
+            {project.roof_analysis?.satellite_image_url || project.satellite_image_url ? (
+              <Card>
+                <CardContent className="pt-5">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Satellite Image</p>
+                  <img
+                    src={project.roof_analysis?.satellite_image_url || project.satellite_image_url}
+                    alt="Satellite view of property"
+                    className="w-full rounded-xl object-cover max-h-72"
+                  />
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {/* Roof Report */}
+            {project.roof_analysis ? (
+              <RoofReport analysis={project.roof_analysis} onSave={() => {}} />
+            ) : (
+              <Card>
+                <CardContent className="pt-5 text-center text-slate-400 text-sm py-10">
+                  No roof analysis data available for this project.
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Materials List */}
+            {project.materials_list?.length > 0 && (
+              <Card>
+                <CardContent className="pt-5">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Materials List</p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-100">
+                          <th className="text-left text-xs text-slate-400 pb-2 font-medium">Item</th>
+                          <th className="text-right text-xs text-slate-400 pb-2 font-medium">Qty</th>
+                          <th className="text-right text-xs text-slate-400 pb-2 font-medium">Unit</th>
+                          <th className="text-right text-xs text-slate-400 pb-2 font-medium">Unit Cost</th>
+                          <th className="text-right text-xs text-slate-400 pb-2 font-medium">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {project.materials_list.map((m, i) => (
+                          <tr key={i} className="border-b border-slate-50 last:border-0">
+                            <td className="py-2 text-slate-700">{m.item}</td>
+                            <td className="py-2 text-right text-slate-600">{m.quantity}</td>
+                            <td className="py-2 text-right text-slate-500">{m.unit}</td>
+                            <td className="py-2 text-right text-slate-600">${m.unit_cost?.toFixed(2)}</td>
+                            <td className="py-2 text-right font-semibold text-slate-800">${m.total_cost?.toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="border-t border-slate-200">
+                          <td colSpan={4} className="pt-3 text-xs font-semibold text-slate-500 uppercase">Materials Total</td>
+                          <td className="pt-3 text-right font-bold text-slate-900">
+                            ${project.materials_list.reduce((sum, m) => sum + (m.total_cost || 0), 0).toLocaleString()}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
             <TabsContent value="milestones">
               <MilestoneTracker milestones={project.milestones || []} isRoofer={isRoofer} onUpdateMilestone={handleUpdateMilestone} project={project} onMilestonesChange={handleMilestonesChange} />
           </TabsContent>
