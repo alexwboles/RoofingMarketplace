@@ -29,15 +29,6 @@ export default function TrustSection() {
           ))}
         </div>
         
-        <div className="text-center">
-          <Button
-            onClick={() => navigate(createPageUrl("RoofersList"))}
-            className="bg-amber-600 hover:bg-amber-700 text-white gap-2"
-          >
-            Browse All Available Roofers
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        </div>
       </div>
     </section>
   );
