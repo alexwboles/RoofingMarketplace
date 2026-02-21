@@ -388,6 +388,14 @@ export default function RooferDashboard() {
               <AppointmentManager rooferId="dashboard" rooferCompany="My Company" />
             </TabsContent>
 
+            <TabsContent value="profile">
+              {roofer ? (
+                <RooferProfileEditor roofer={roofer} onSave={() => queryClient.invalidateQueries({ queryKey: ["roofer"] })} />
+              ) : (
+                <p className="text-sm text-slate-400 text-center py-12">No roofer profile found for your account.</p>
+              )}
+            </TabsContent>
+
             <TabsContent value="settings">
               {roofer && <ServiceAreaEditor roofer={roofer} onSave={() => queryClient.invalidateQueries({ queryKey: ["roofer"] })} />}
             </TabsContent>
