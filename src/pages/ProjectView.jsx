@@ -38,7 +38,10 @@ export default function ProjectView() {
   const [loading, setLoading] = useState(true);
   const [isEditingOverview, setIsEditingOverview] = useState(false);
   const [editData, setEditData] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
 
   // Handle Stripe payment success redirect
   useEffect(() => {
