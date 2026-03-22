@@ -151,7 +151,7 @@ export default function QuoteResult() {
 
     const analysis = await base44.integrations.Core.InvokeLLM({
       model: "claude_sonnet_4_6",
-      ...(satelliteDataUrl ? { file_urls: [satelliteDataUrl] } : {}),
+      ...(satelliteDataUrl ? { file_urls: [satelliteDataUrl] } : { add_context_from_internet: false }),
       prompt: `You are a professional roof measurement specialist. Analyze this Google Maps satellite image of the property at: "${quoteData.address}".
 ${detailsContext ? `\nHomeowner info:\n${detailsContext}` : ""}
 
