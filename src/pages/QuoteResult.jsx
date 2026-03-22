@@ -144,7 +144,7 @@ export default function QuoteResult() {
     let satelliteDataUrl = null;
     try {
       const res = await base44.functions.invoke("fetchSatelliteImage", { address: quoteData.address });
-      satelliteDataUrl = res.data?.data_url || null;
+      satelliteDataUrl = res.data?.file_url || null;
     } catch (e) {
       console.warn("Satellite fetch failed, proceeding without image", e.message);
     }
