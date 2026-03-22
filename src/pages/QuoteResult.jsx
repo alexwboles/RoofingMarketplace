@@ -154,8 +154,9 @@ export default function QuoteResult() {
     }
 
     const analysis = await base44.integrations.Core.InvokeLLM({
-      model: "claude_sonnet_4_6",
-      ...(uploadedImageUrl ? { file_urls: [uploadedImageUrl] } : { add_context_from_internet: true }),
+      ...(uploadedImageUrl
+        ? { model: "claude_sonnet_4_6", file_urls: [uploadedImageUrl] }
+        : { model: "gemini_3_pro", add_context_from_internet: true }),
       prompt: `You are a professional roof measurement specialist with 20+ years experience. You are looking at a high-resolution Google Maps satellite image of the property at:
 
 "${quoteData.address}"
@@ -359,14 +360,14 @@ Calculate:
     if (!quoteId) return;
 
     const loadAndAnalyze = async () => {
+      try {
       const q = await base44.entities.RoofQuote.filter({ id: quoteId });
-      if (!q.length) return;
+      if (!q.length) { setIsAnalyzing(false); return; }
       const quoteData = q[0];
 
       if (quoteData.status !== "analyzing") {
         setQuote(quoteData);
         setMaterialType(quoteData.material_type || "architectural_shingle");
-        // Restore sections from saved analysis
         const savedSections = quoteData.roof_analysis?.roof_sections;
         if (savedSections?.length) {
           const total = savedSections.reduce((s, x) => s + (x.area_sqft || 0), 0);
@@ -381,34 +382,19 @@ Calculate:
         return;
       }
 
-      // Run analysis
       const analysis = await analyzeRoof(quoteData);
-
-      // Generate materials and pricing
       const pricing = await generateMaterialsAndPricing(analysis, "architectural_shingle");
 
-      // Validate and normalize roof_sections — filter for realistic values
       const validSections = (analysis.roof_sections || []).filter(s => s.area_sqft && s.area_sqft >= 200);
       if (validSections.length === 0 && analysis.total_area_sqft > 900) {
-        // Fallback: create a single section if none exist
-        validSections.push({
-          name: "Full Roof",
-          area_sqft: analysis.total_area_sqft,
-          pitch: analysis.pitch
-        });
+        validSections.push({ name: "Full Roof", area_sqft: analysis.total_area_sqft, pitch: analysis.pitch });
       }
 
-      // Use section sum as authoritative total (sections are more accurate)
       const sectionTotal = validSections.reduce((sum, s) => sum + (s.area_sqft || 0), 0);
       const accurateTotal = sectionTotal > 900 ? sectionTotal : analysis.total_area_sqft;
 
-      // Update the quote
       const updatedQuote = {
-        roof_analysis: {
-          ...analysis,
-          total_area_sqft: accurateTotal,
-          roof_sections: validSections
-        },
+        roof_analysis: { ...analysis, total_area_sqft: accurateTotal, roof_sections: validSections },
         materials_list: pricing.materials,
         materials_cost: pricing.materials_cost,
         labor_cost: pricing.labor_cost,
@@ -416,26 +402,27 @@ Calculate:
         price_range_low: pricing.price_range_low,
         price_range_high: pricing.price_range_high,
         material_type: "architectural_shingle",
+        satellite_image_url: `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(quoteData.address)}&zoom=20&size=640x360&maptype=satellite&scale=2&key=AIzaSyA0LIN1yEftyzWNZGVRBAms_FckT3Sg_2U`,
         status: "quoted",
       };
 
-      // Store satellite image URL on the quote for sharing with roofers
-      const satelliteImageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(quoteData.address)}&zoom=20&size=640x360&maptype=satellite&scale=2&key=AIzaSyA0LIN1yEftyzWNZGVRBAms_FckT3Sg_2U`;
-      updatedQuote.satellite_image_url = satelliteImageUrl;
-
       await base44.entities.RoofQuote.update(quoteId, updatedQuote);
 
-      const secTotal = (analysis.roof_sections || []).reduce((sum, s) => sum + (s.area_sqft || 0), 0);
-      const initialSections = (analysis.roof_sections || []).map((s, i) => ({
+      const secTotal = validSections.reduce((sum, s) => sum + (s.area_sqft || 0), 0);
+      const initialSections = validSections.map((s, i) => ({
         name: s.name,
         area_sqft: s.area_sqft,
         color: i % 6,
-        points: generateRoofPolygon(i, analysis.roof_sections.length, secTotal > 0 ? s.area_sqft / secTotal : 1, analysis.complexity, s.name),
+        points: generateRoofPolygon(i, validSections.length, secTotal > 0 ? s.area_sqft / secTotal : 1, analysis.complexity, s.name),
       }));
       setRoofSections(initialSections);
-
       setQuote({ ...quoteData, ...updatedQuote });
-      setTimeout(() => setIsAnalyzing(false), 1500);
+      } catch (err) {
+        console.error("Analysis failed:", err);
+        toast.error("Analysis failed. Please try again.");
+      } finally {
+        setIsAnalyzing(false);
+      }
     };
 
     loadAndAnalyze();
