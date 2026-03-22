@@ -7,8 +7,6 @@ Deno.serve(async (req) => {
     const { address } = await req.json();
     if (!address) return Response.json({ error: "address required" }, { status: 400 });
 
-    const base44 = createClientFromRequest(req);
-
     const satelliteUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(address)}&zoom=20&size=640x640&maptype=satellite&scale=2&key=${GOOGLE_KEY}`;
 
     const imgRes = await fetch(satelliteUrl);
@@ -18,31 +16,18 @@ Deno.serve(async (req) => {
     }
 
     const arrayBuffer = await imgRes.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
 
-    // Use FormData to send as multipart (required by UploadFile)
-    const formData = new FormData();
-    const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
-    formData.append("file", blob, "satellite.jpg");
-
-    // Call the Base44 upload endpoint directly via the SDK's underlying HTTP
-    const uploadRes = await fetch("https://api.base44.com/api/apps/" + Deno.env.get("BASE44_APP_ID") + "/integrations/Core/UploadFile", {
-      method: "POST",
-      headers: {
-        "Authorization": req.headers.get("Authorization") || "",
-      },
-      body: formData,
-    });
-
-    if (!uploadRes.ok) {
-      const errText = await uploadRes.text();
-      console.error("Upload failed:", uploadRes.status, errText);
-      return Response.json({ error: "Upload failed: " + errText }, { status: 502 });
+    // Convert to base64
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
     }
+    const base64 = btoa(binary);
+    const dataUrl = `data:image/jpeg;base64,${base64}`;
 
-    const uploadData = await uploadRes.json();
-    console.log("Uploaded satellite image:", uploadData.file_url);
-
-    return Response.json({ file_url: uploadData.file_url });
+    console.log("Satellite image fetched, base64 length:", base64.length);
+    return Response.json({ data_url: dataUrl });
   } catch (error) {
     console.error("fetchSatelliteImage error:", error.message);
     return Response.json({ error: error.message }, { status: 500 });
