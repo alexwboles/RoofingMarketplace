@@ -279,21 +279,27 @@ Return a complete JSON with all measurements in imperial units (feet, sq ft).`,
   }, []);
 
   const generateMaterialsAndPricing = useCallback(async (analysis, matType) => {
+    const obstacleDetail = (analysis.obstacles || []).map(o =>
+      `${o.count}x ${o.type}${o.size_sqft ? ` (~${o.size_sqft} sq ft each)` : ""}`
+    ).join(", ") || "none detected";
+
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `You are a roofing cost estimation AI. Given this roof analysis, generate a detailed materials list and pricing for a "${matType}" roof replacement.
 
 Roof Analysis:
-- Total Area: ${analysis.total_area_sqft} sq ft
+- Total Area: ${analysis.total_area_sqft} sq ft (includes pitch & waste factors)
+- Raw Footprint: ${analysis.roof_footprint_sqft || "N/A"} sq ft
 - Pitch: ${analysis.pitch} (multiplier: ${analysis.pitch_multiplier || "estimated"})
 - Overhang: ${analysis.overhang_inches || 12} inches
 - Waste Factor: ${analysis.waste_factor || 1.10}
 - Difficulty Score: ${analysis.difficulty_score || 5}/10
 - Difficulty Factors: ${(analysis.difficulty_factors || []).join("; ") || "standard"}
+- Measurement Confidence: ${analysis.measurement_confidence || "medium"}
 - Facets: ${analysis.num_facets}, Complexity: ${analysis.complexity}
 - Peaks: ${analysis.num_peaks}, Valleys: ${analysis.num_valleys}, Hips: ${analysis.num_hips}
 - Ridge: ${analysis.ridge_length_ft} ft, Eave: ${analysis.eave_length_ft} ft
 - Rake: ${analysis.rake_length_ft} ft, Valley: ${analysis.valley_length_ft} ft
-- Obstacles: ${JSON.stringify(analysis.obstacles)}
+- Obstacles: ${obstacleDetail}
 - Stories: ${analysis.stories}
 
 DIFFICULTY-ADJUSTED LABOR:
