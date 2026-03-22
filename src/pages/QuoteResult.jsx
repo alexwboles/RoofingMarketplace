@@ -139,91 +139,55 @@ export default function QuoteResult() {
       extraDetails.upgrades ? `Desired upgrades/add-ons: ${extraDetails.upgrades}` : "",
     ].filter(Boolean).join("\n");
 
-    // Fetch satellite image and upload so the vision model can access it
-    const satelliteImageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(quoteData.address)}&zoom=20&size=640x640&maptype=satellite&scale=2&key=AIzaSyA0LIN1yEftyzWNZGVRBAms_FckT3Sg_2U`;
-    let uploadedImageUrl = null;
-    try {
-      const imgResponse = await fetch(satelliteImageUrl);
-      const blob = await imgResponse.blob();
-      const file = new File([blob], "satellite.jpg", { type: "image/jpeg" });
-      const uploaded = await base44.integrations.Core.UploadFile({ file });
-      uploadedImageUrl = uploaded.file_url;
-    } catch (e) {
-      // If upload fails, proceed without image (fallback to text-only analysis)
-      console.warn("Satellite image upload failed, falling back to text analysis", e);
-    }
+    // Pass satellite image URL directly — InvokeLLM fetches it server-side (no CORS issue)
+    const GOOGLE_KEY = "AIzaSyA0LIN1yEftyzWNZGVRBAms_FckT3Sg_2U";
+    const satelliteUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(quoteData.address)}&zoom=20&size=640x640&maptype=satellite&scale=2&key=${GOOGLE_KEY}`;
 
     const analysis = await base44.integrations.Core.InvokeLLM({
-      ...(uploadedImageUrl
-        ? { model: "claude_sonnet_4_6", file_urls: [uploadedImageUrl] }
-        : { model: "gemini_3_pro", add_context_from_internet: true }),
-      prompt: `You are a professional roof measurement specialist with 20+ years experience. You are looking at a high-resolution Google Maps satellite image of the property at:
+      model: "claude_sonnet_4_6",
+      file_urls: [satelliteUrl],
+      prompt: `You are a professional roof measurement specialist. Analyze this Google Maps satellite image of the property at: "${quoteData.address}".
+${detailsContext ? `\nHomeowner info:\n${detailsContext}` : ""}
 
-"${quoteData.address}"
-${detailsContext ? `\nHomeowner details:\n${detailsContext}` : ""}
+The image is 640×640 pixels at zoom level 20. At zoom 20, 1 pixel ≈ 0.149 meters ≈ 0.489 feet at mid-US latitudes (adjust ±10% for latitude if needed).
 
-The image is 640x640 pixels at zoom level 20 (each pixel ≈ 0.06 meters / ~2.4 inches at this zoom).
+STEP 1 — ROOF FOOTPRINT:
+Identify the roof boundary (typically lighter gray/brown structure). Measure its pixel width and depth.
+- footprint_width_ft = pixel_width × 0.489
+- footprint_depth_ft = pixel_depth × 0.489
+- roof_footprint_sqft = width × depth
 
-YOUR TASK: Perform a precise visual roof measurement. You MUST measure what you actually SEE in the image — do not estimate or use averages.
+STEP 2 — EACH ROOF PLANE/FACET:
+For every distinct slope, measure its projected area in pixels → sq ft. They must sum within 2% of footprint.
+Note orientation: Front, Back, Left, Right, Garage.
 
-== STEP 1: IDENTIFY THE ROOF FOOTPRINT ==
-Trace the outer boundary of the entire roof structure in the image. The roof is the lighter-colored structure (typically gray, brown, or tan). Measure its pixel dimensions.
-- Measure roof width in pixels → convert: pixels × 0.059 = meters, then × 3.281 = feet
-- Measure roof depth in pixels → same conversion
-- Calculate footprint = width_ft × depth_ft
+STEP 3 — PITCH FROM SHADOWS:
+Shadow depth ratio → pitch estimate:
+- No shadow = 2/12 (mult 1.01)
+- Slight shadow = 4/12 (mult 1.06)
+- Clear shadow transition = 6/12 (mult 1.12)
+- Strong deep shadows = 8/12 (mult 1.20)
+- Very dramatic dark shadows = 10/12+ (mult 1.30+)
 
-== STEP 2: COUNT AND MEASURE EACH ROOF PLANE/FACET ==
-For each distinct slope/plane on the roof:
-- Identify plane boundaries (ridge lines, hip lines, valley lines, eave edges)
-- Measure that plane's projected area in pixels → convert to sq ft
-- Note its orientation (Front/South, Back/North, Left/East, Right/West, or Garage)
-- Each section MUST sum to the total footprint (±2% tolerance)
+STEP 4 — OBSTRUCTIONS:
+Scan carefully for: chimneys, skylights, plumbing vents, HVAC, solar panels, ridge vents, dormers, satellite dishes.
+For each: type, count, size_sqft.
 
-== STEP 3: DETERMINE PITCH FROM SHADOWS ==
-Look at the cast shadows on the roof:
-- Flat (1-2/12): Almost no shadow variation = multiplier 1.00-1.01
-- Low (2-4/12): Slight shadow = multiplier 1.02-1.06  
-- Moderate (4-7/12): Clear shadow transition = multiplier 1.07-1.15
-- Steep (7-10/12): Strong deep shadows = multiplier 1.16-1.30
-- Very Steep (10+/12): Dramatic dark shadows = multiplier 1.31+
-Also look at the overhang: measure visible roof overhang past the walls in pixels.
+STEP 5 — LINEAR FEATURES (count pixels → convert to feet):
+Ridge, hips, valleys, eaves/drip-edge, rakes.
 
-== STEP 4: DETECT ALL ROOF OBSTRUCTIONS ==
-Carefully scan the entire roof for:
-- CHIMNEYS: Dark rectangular protrusions with visible mortar/brick, cast shadows
-- SKYLIGHTS: Bright rectangular glass panels, often with metal frames visible
-- PLUMBING VENTS: Small circular dots (3-6 inch diameter), often dark caps
-- HVAC UNITS: Large rectangular metal boxes (2-4 ft wide)
-- SOLAR PANELS: Rectangular dark blue/black panels in grid patterns
-- RIDGE VENTS: Continuous raised cap along the ridge
-- DORMER WINDOWS: Vertical window structures protruding from roof slopes
-- SATELLITE DISHES: Circular disk mounted on roof
-For EACH obstacle: type, count, approximate size in sq ft (subtract from roofable area)
+STEP 6 — FINAL AREA:
+total_area_sqft = (footprint_sqft - obstacle_sqft) × pitch_multiplier × waste_factor
+waste_factor: simple=1.05, moderate=1.08, complex=1.10-1.12
 
-== STEP 5: MEASURE LINEAR FEATURES ==
-Count pixels for each linear feature:
-- Ridge line(s): horizontal peak where two slopes meet
-- Hip lines: diagonal lines at corners  
-- Valley lines: diagonal lines where slopes join inward
-- Eave/drip edge: all perimeter edges (add all sides)
-- Rake edges: sloped perimeter edges (gable ends)
-Convert all pixel lengths to feet using same pixel ratio.
+RULES:
+- ALWAYS return a number for total_area_sqft (typical house: 1200-3500 sq ft)
+- ALWAYS return pitch as "X/12" format
+- ALWAYS return complexity as exactly "simple", "moderate", or "complex"
+- ALWAYS return difficulty_score as a number 1-10
+- Never leave fields null or empty — use your best estimate based on what you see
 
-== STEP 6: CALCULATE FINAL ROOF AREA ==
-- Gross Deck Area = footprint × pitch_multiplier
-- Obstacle deduction = sum of all obstacle areas
-- Net Roofable Area = Gross Deck - Obstacles
-- Add waste factor: 5% simple, 8% moderate, 10-12% complex
-- FINAL total_area_sqft = Net Roofable Area × waste_factor
-
-IMPORTANT ACCURACY RULES:
-- Your total_area_sqft MUST match what you can physically measure in the image
-- roof_sections areas MUST sum to within 2% of the footprint × pitch_multiplier
-- Never guess — if you cannot see something clearly, say so in condition_notes
-- Minimum realistic roof area for a house: 900 sq ft; typical 1500-3000 sq ft
-- If the image shows a small portion (zoomed too close), estimate based on visible footprint
-
-Return a complete JSON with all measurements in imperial units (feet, sq ft).`,
+Return complete JSON with ALL fields populated.`,
       response_json_schema: {
         type: "object",
         properties: {
@@ -260,9 +224,9 @@ Return a complete JSON with all measurements in imperial units (feet, sq ft).`,
           condition_notes: { type: "string" },
           estimated_remaining_life_years: { type: "number" },
           ai_suggestions: { type: "array", items: { type: "string" } },
-          measurement_confidence: { type: "string", description: "high/medium/low confidence in measurements" },
-          pixel_scale_ft_per_px: { type: "number", description: "Measured feet per pixel at this zoom" },
-          roof_footprint_sqft: { type: "number", description: "Raw footprint before pitch multiplier" },
+          measurement_confidence: { type: "string" },
+          pixel_scale_ft_per_px: { type: "number" },
+          roof_footprint_sqft: { type: "number" },
           roof_sections: {
             type: "array",
             items: {
@@ -275,17 +239,19 @@ Return a complete JSON with all measurements in imperial units (feet, sq ft).`,
               }
             }
           }
-        }
+        },
+        required: ["total_area_sqft", "pitch", "complexity", "difficulty_score"]
       }
     });
 
     // Safety guard: ensure total_area_sqft is never unrealistically small
-    if (analysis && analysis.total_area_sqft < 900) {
+    if (!analysis || !analysis.total_area_sqft || analysis.total_area_sqft < 900) {
       const footprint = extraDetails.home_sqft ? parseInt(extraDetails.home_sqft) : 1500;
-      const stories = analysis.stories || 1;
-      const pitch_mult = analysis.pitch_multiplier || 1.118;
-      const waste = analysis.waste_factor || 1.10;
-      analysis.total_area_sqft = Math.round((footprint / stories) * 1.1 * pitch_mult * waste);
+      const stories = analysis?.stories || 1;
+      const pitch_mult = analysis?.pitch_multiplier || 1.118;
+      const waste = analysis?.waste_factor || 1.10;
+      if (!analysis) return { total_area_sqft: Math.round((footprint / stories) * pitch_mult * waste), pitch: "6/12", complexity: "moderate", difficulty_score: 5, num_facets: 4, stories: 1 };
+      analysis.total_area_sqft = Math.round((footprint / stories) * pitch_mult * waste);
     }
     return analysis;
   }, []);
