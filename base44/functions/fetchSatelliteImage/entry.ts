@@ -16,18 +16,16 @@ Deno.serve(async (req) => {
     }
 
     const arrayBuffer = await imgRes.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
 
-    // Convert to base64
-    let binary = "";
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64 = btoa(binary);
-    const dataUrl = `data:image/jpeg;base64,${base64}`;
+    // Upload to Base44 storage to get a real URL (InvokeLLM requires real URLs, not data: URIs)
+    const base44 = createClientFromRequest(req);
+    const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
+    const file = new File([blob], "satellite.jpg", { type: "image/jpeg" });
 
-    console.log("Satellite image fetched, base64 length:", base64.length);
-    return Response.json({ data_url: dataUrl });
+    const { file_url } = await base44.asServiceRole.integrations.Core.UploadFile({ file });
+
+    console.log("Satellite image uploaded, url:", file_url);
+    return Response.json({ file_url });
   } catch (error) {
     console.error("fetchSatelliteImage error:", error.message);
     return Response.json({ error: error.message }, { status: 500 });
