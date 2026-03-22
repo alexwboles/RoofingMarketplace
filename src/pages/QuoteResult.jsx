@@ -139,12 +139,23 @@ export default function QuoteResult() {
       extraDetails.upgrades ? `Desired upgrades/add-ons: ${extraDetails.upgrades}` : "",
     ].filter(Boolean).join("\n");
 
-    // High-res satellite image passed directly to vision model
+    // Fetch satellite image and upload so the vision model can access it
     const satelliteImageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(quoteData.address)}&zoom=20&size=640x640&maptype=satellite&scale=2&key=AIzaSyA0LIN1yEftyzWNZGVRBAms_FckT3Sg_2U`;
+    let uploadedImageUrl = null;
+    try {
+      const imgResponse = await fetch(satelliteImageUrl);
+      const blob = await imgResponse.blob();
+      const file = new File([blob], "satellite.jpg", { type: "image/jpeg" });
+      const uploaded = await base44.integrations.Core.UploadFile({ file });
+      uploadedImageUrl = uploaded.file_url;
+    } catch (e) {
+      // If upload fails, proceed without image (fallback to text-only analysis)
+      console.warn("Satellite image upload failed, falling back to text analysis", e);
+    }
 
     const analysis = await base44.integrations.Core.InvokeLLM({
       model: "claude_sonnet_4_6",
-      file_urls: [satelliteImageUrl],
+      ...(uploadedImageUrl ? { file_urls: [uploadedImageUrl] } : { add_context_from_internet: true }),
       prompt: `You are a professional roof measurement specialist with 20+ years experience. You are looking at a high-resolution Google Maps satellite image of the property at:
 
 "${quoteData.address}"
