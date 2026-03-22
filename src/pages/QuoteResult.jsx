@@ -139,91 +139,79 @@ export default function QuoteResult() {
       extraDetails.upgrades ? `Desired upgrades/add-ons: ${extraDetails.upgrades}` : "",
     ].filter(Boolean).join("\n");
 
-    // Build satellite image URL using Google's open satellite tile (no API key required for embed reference)
-    const satelliteUrl = `https://maps.google.com/maps?q=${encodeURIComponent(quoteData.address)}&t=k&z=20`;
+    // High-res satellite image passed directly to vision model
+    const satelliteImageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(quoteData.address)}&zoom=20&size=640x640&maptype=satellite&scale=2&key=AIzaSyA0LIN1yEftyzWNZGVRBAms_FckT3Sg_2U`;
 
     const analysis = await base44.integrations.Core.InvokeLLM({
-      add_context_from_internet: true,
-      prompt: `You are an expert roofing estimator. Provide PRECISE roof measurements - accuracy directly impacts customer quotes. Use real property data, not estimates.
+      model: "claude_sonnet_4_6",
+      file_urls: [satelliteImageUrl],
+      prompt: `You are a professional roof measurement specialist with 20+ years experience. You are looking at a high-resolution Google Maps satellite image of the property at:
 
-Property Address: "${quoteData.address}"
-Satellite/aerial view: ${satelliteUrl}
-${detailsContext ? `\nHomeowner-provided details:\n${detailsContext}` : ""}
+"${quoteData.address}"
+${detailsContext ? `\nHomeowner details:\n${detailsContext}` : ""}
 
-STEP 1: VERIFY LIVING AREA from public records
-- Search county assessor, Zillow, Redfin for actual living area (NOT lot size)
-- Confirm number of stories
-- This is your foundation for calculations
+The image is 640x640 pixels at zoom level 20 (each pixel ≈ 0.06 meters / ~2.4 inches at this zoom).
 
-STEP 2: CALCULATE ROOF FOOTPRINT
-- Footprint = Living Area ÷ Stories
-- Overhang = 12-18 inches (NOT 24) on typical homes. Use 24" only if clearly visible in satellite
-- Overhang area = perimeter × (overhang_inches ÷ 12)
-- Typical perimeter for rectangular homes: ~200-250 ft for 2,000 sq ft footprint
-- Gross deck = Footprint + Overhang area
+YOUR TASK: Perform a precise visual roof measurement. You MUST measure what you actually SEE in the image — do not estimate or use averages.
 
-STEP 3: PRECISE PITCH DETECTION from satellite
-Measure roof slope carefully:
-- FLAT/LOW (0-3/12): appears nearly horizontal, minimal shadows = ×1.02
-- MODERATE-LOW (3-5/12): subtle but visible slope = ×1.06-1.08
-- MODERATE (5-7/12): clear slope with consistent shadows = ×1.10-1.15
-- STEEP (7-10/12): pronounced slope, very visible = ×1.15-1.30
-- VERY STEEP (10+/12): dramatic angle = ×1.30+
+== STEP 1: IDENTIFY THE ROOF FOOTPRINT ==
+Trace the outer boundary of the entire roof structure in the image. The roof is the lighter-colored structure (typically gray, brown, or tan). Measure its pixel dimensions.
+- Measure roof width in pixels → convert: pixels × 0.059 = meters, then × 3.281 = feet
+- Measure roof depth in pixels → same conversion
+- Calculate footprint = width_ft × depth_ft
 
-CRITICAL: Pitch detection rules:
-- Compare north vs south facing slopes for shadow length
-- Measure visible overhang depth relative to wall height (rough angle estimate)
-- Conservative pitch estimates are better than inflated ones
+== STEP 2: COUNT AND MEASURE EACH ROOF PLANE/FACET ==
+For each distinct slope/plane on the roof:
+- Identify plane boundaries (ridge lines, hip lines, valley lines, eave edges)
+- Measure that plane's projected area in pixels → convert to sq ft
+- Note its orientation (Front/South, Back/North, Left/East, Right/West, or Garage)
+- Each section MUST sum to the total footprint (±2% tolerance)
 
-STEP 4: APPLY MULTIPLIERS (conservative approach)
-- pitch_multiplier: Use exact value from above
-- waste_factor: 1.05 (simple gable), 1.08 (2-4 slopes), 1.10 (complex 5+)
-- Total = Gross Deck × Pitch Multiplier × Waste Factor
+== STEP 3: DETERMINE PITCH FROM SHADOWS ==
+Look at the cast shadows on the roof:
+- Flat (1-2/12): Almost no shadow variation = multiplier 1.00-1.01
+- Low (2-4/12): Slight shadow = multiplier 1.02-1.06  
+- Moderate (4-7/12): Clear shadow transition = multiplier 1.07-1.15
+- Steep (7-10/12): Strong deep shadows = multiplier 1.16-1.30
+- Very Steep (10+/12): Dramatic dark shadows = multiplier 1.31+
+Also look at the overhang: measure visible roof overhang past the walls in pixels.
 
-EXAMPLE (conservative):
-- Living area: 2,000 sq ft, 1 story
-- Footprint: 2,000 sq ft
-- Overhang (12"): 200ft × 1ft = 200 sq ft
-- Gross: 2,200 sq ft
-- Pitch 6/12 (×1.10 conservative): 2,420 sq ft
-- Waste ×1.05 (simple): 2,541 sq ft total
+== STEP 4: DETECT ALL ROOF OBSTRUCTIONS ==
+Carefully scan the entire roof for:
+- CHIMNEYS: Dark rectangular protrusions with visible mortar/brick, cast shadows
+- SKYLIGHTS: Bright rectangular glass panels, often with metal frames visible
+- PLUMBING VENTS: Small circular dots (3-6 inch diameter), often dark caps
+- HVAC UNITS: Large rectangular metal boxes (2-4 ft wide)
+- SOLAR PANELS: Rectangular dark blue/black panels in grid patterns
+- RIDGE VENTS: Continuous raised cap along the ridge
+- DORMER WINDOWS: Vertical window structures protruding from roof slopes
+- SATELLITE DISHES: Circular disk mounted on roof
+For EACH obstacle: type, count, approximate size in sq ft (subtract from roofable area)
 
-STEP 5: DETAILED OBSTACLE DETECTION
-ONLY count obstacles that are UNMISTAKABLY VISIBLE in satellite imagery:
-- Chimneys: Dark rectangular protrusions, clear shadow, multiple visible sides
-- Plumbing vents: Small round raised elements (3-4" diameter), must be clearly distinct
-- Skylights: Rectangular glass panels or bright metal frames (very obvious when present)
-- HVAC curbs: Large rectangular metal boxes on roof (typical size 2-3 ft wide, clear outline)
-- Satellite dishes: Large round dishes (very obvious, rare in residential)
-- Ridge vents: Continuous metal cap along ridge line (obvious when present)
-- DO NOT ASSUME: If doubtful or unclear in image, EXCLUDE it
-- Result: Empty array [] is acceptable if nothing is definitively visible
+== STEP 5: MEASURE LINEAR FEATURES ==
+Count pixels for each linear feature:
+- Ridge line(s): horizontal peak where two slopes meet
+- Hip lines: diagonal lines at corners  
+- Valley lines: diagonal lines where slopes join inward
+- Eave/drip edge: all perimeter edges (add all sides)
+- Rake edges: sloped perimeter edges (gable ends)
+Convert all pixel lengths to feet using same pixel ratio.
 
-STEP 6: SECTION BREAKDOWN
-- Identify main roof planes (front, back, left, right slopes, any separate garage)
-- Each section ≥ 150 sq ft minimum
-- Distribute total_area_sqft proportionally among sections
-- Sections MUST sum to total_area_sqft (±1% tolerance)
-- Name sections directionally: "Front South Slope", "Back North Slope", "East Hip", etc
+== STEP 6: CALCULATE FINAL ROOF AREA ==
+- Gross Deck Area = footprint × pitch_multiplier
+- Obstacle deduction = sum of all obstacle areas
+- Net Roofable Area = Gross Deck - Obstacles
+- Add waste factor: 5% simple, 8% moderate, 10-12% complex
+- FINAL total_area_sqft = Net Roofable Area × waste_factor
 
-RETURN (all required):
-- total_area_sqft (900+ minimum, realistic for home size)
-- pitch ("4/12" format) — conservative estimate
-- pitch_multiplier (1.02-1.40 range)
-- overhang_inches (12-18 typical; 24 only if obvious)
-- waste_factor (1.05-1.10 conservative)
-- difficulty_score (1-10)
-- difficulty_factors (array explaining score)
-- num_facets, num_peaks, num_valleys, num_hips
-- ridge_length_ft, eave_length_ft, rake_length_ft, valley_length_ft
-- obstacles (ONLY clearly visible items; empty [] if uncertain)
-- condition_notes (describe what you see, not assumptions)
-- estimated_remaining_life_years
-- complexity ("simple"|"moderate"|"complex")
-- stories (number)
-- current_material (string), current_material_label (string)
-- roof_sections (array of {name, area_sqft, pitch} summing to total)
-- ai_suggestions (3 specific tips for THIS property/climate)`,
+IMPORTANT ACCURACY RULES:
+- Your total_area_sqft MUST match what you can physically measure in the image
+- roof_sections areas MUST sum to within 2% of the footprint × pitch_multiplier
+- Never guess — if you cannot see something clearly, say so in condition_notes
+- Minimum realistic roof area for a house: 900 sq ft; typical 1500-3000 sq ft
+- If the image shows a small portion (zoomed too close), estimate based on visible footprint
+
+Return a complete JSON with all measurements in imperial units (feet, sq ft).`,
       response_json_schema: {
         type: "object",
         properties: {
@@ -248,7 +236,8 @@ RETURN (all required):
               type: "object",
               properties: {
                 type: { type: "string" },
-                count: { type: "number" }
+                count: { type: "number" },
+                size_sqft: { type: "number" }
               }
             }
           },
@@ -259,6 +248,9 @@ RETURN (all required):
           condition_notes: { type: "string" },
           estimated_remaining_life_years: { type: "number" },
           ai_suggestions: { type: "array", items: { type: "string" } },
+          measurement_confidence: { type: "string", description: "high/medium/low confidence in measurements" },
+          pixel_scale_ft_per_px: { type: "number", description: "Measured feet per pixel at this zoom" },
+          roof_footprint_sqft: { type: "number", description: "Raw footprint before pitch multiplier" },
           roof_sections: {
             type: "array",
             items: {
@@ -266,7 +258,8 @@ RETURN (all required):
               properties: {
                 name: { type: "string" },
                 area_sqft: { type: "number" },
-                pitch: { type: "string" }
+                pitch: { type: "string" },
+                orientation: { type: "string" }
               }
             }
           }
