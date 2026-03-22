@@ -140,12 +140,18 @@ export default function QuoteResult() {
     ].filter(Boolean).join("\n");
 
     // Pass satellite image URL directly — InvokeLLM fetches it server-side (no CORS issue)
-    const GOOGLE_KEY = "AIzaSyA0LIN1yEftyzWNZGVRBAms_FckT3Sg_2U";
-    const satelliteUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(quoteData.address)}&zoom=20&size=640x640&maptype=satellite&scale=2&key=${GOOGLE_KEY}`;
+    // Fetch + upload satellite image via backend function (avoids CORS and file type issues)
+    let uploadedImageUrl = null;
+    try {
+      const res = await base44.functions.invoke("fetchSatelliteImage", { address: quoteData.address });
+      uploadedImageUrl = res.data?.file_url || null;
+    } catch (e) {
+      console.warn("Satellite fetch failed, proceeding without image", e.message);
+    }
 
     const analysis = await base44.integrations.Core.InvokeLLM({
       model: "claude_sonnet_4_6",
-      file_urls: [satelliteUrl],
+      ...(uploadedImageUrl ? { file_urls: [uploadedImageUrl] } : {}),
       prompt: `You are a professional roof measurement specialist. Analyze this Google Maps satellite image of the property at: "${quoteData.address}".
 ${detailsContext ? `\nHomeowner info:\n${detailsContext}` : ""}
 
