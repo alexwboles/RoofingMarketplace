@@ -410,7 +410,7 @@ Calculate:
       };
 
       // Store satellite image URL on the quote for sharing with roofers
-      const satelliteImageUrl = `https://maps.google.com/maps?q=${encodeURIComponent(quoteData.address)}&t=k&z=20`;
+      const satelliteImageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(quoteData.address)}&zoom=20&size=640x360&maptype=satellite&scale=2&key=AIzaSyA0LIN1yEftyzWNZGVRBAms_FckT3Sg_2U`;
       updatedQuote.satellite_image_url = satelliteImageUrl;
 
       await base44.entities.RoofQuote.update(quoteId, updatedQuote);
