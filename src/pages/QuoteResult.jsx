@@ -283,25 +283,29 @@ ABSOLUTE RULES:
       }
     });
 
-    // Post-processing validation: cross-check section totals vs reported total
+    // Post-processing validation: fill nulls with defaults first
     if (analysis) {
+      if (!analysis.pitch) analysis.pitch = "6/12";
+      if (!analysis.complexity) analysis.complexity = "moderate";
+      if (!analysis.difficulty_score) analysis.difficulty_score = 5;
+      if (!analysis.stories) analysis.stories = 1;
+      if (!analysis.num_facets) analysis.num_facets = 4;
+
       const sectionSum = (analysis.roof_sections || []).reduce((s, x) => s + (x.area_sqft || 0), 0);
       // If sections sum is reasonable and diverges significantly from total, reconcile
-      if (sectionSum > 900 && Math.abs(sectionSum - analysis.total_area_sqft) / analysis.total_area_sqft > 0.1) {
-        // Trust section sum over the single total figure when sections are present
+      if (sectionSum > 900 && analysis.total_area_sqft && Math.abs(sectionSum - analysis.total_area_sqft) / analysis.total_area_sqft > 0.1) {
         const footprint = analysis.roof_footprint_sqft || sectionSum;
         const pitch_mult = analysis.pitch_multiplier || 1.118;
         const waste = analysis.waste_factor || 1.08;
         analysis.total_area_sqft = Math.round(footprint * pitch_mult * waste);
       }
-      // Hard bounds check
-      if (analysis.total_area_sqft < 900) {
+      // Hard bounds check — also catches null/0
+      if (!analysis.total_area_sqft || analysis.total_area_sqft < 900) {
         const footprint = extraDetails.home_sqft ? parseInt(extraDetails.home_sqft) : 1500;
         const stories = analysis.stories || 1;
         analysis.total_area_sqft = Math.round((footprint / stories) * (analysis.pitch_multiplier || 1.118) * (analysis.waste_factor || 1.10));
       }
       if (analysis.total_area_sqft > 8000) {
-        // Likely a scale error — halve it
         analysis.total_area_sqft = Math.round(analysis.total_area_sqft / 2);
       }
     } else {
@@ -388,6 +392,16 @@ Calculate:
       const quoteData = q[0];
 
       if (quoteData.status !== "analyzing") {
+        // Patch any nulls in roof_analysis with sensible defaults so the UI renders
+        if (quoteData.roof_analysis) {
+          const ra = quoteData.roof_analysis;
+          if (!ra.pitch) ra.pitch = "6/12";
+          if (!ra.complexity) ra.complexity = "moderate";
+          if (!ra.difficulty_score) ra.difficulty_score = 5;
+          if (!ra.stories) ra.stories = 1;
+          if (!ra.num_facets) ra.num_facets = 4;
+          if (!ra.total_area_sqft || ra.total_area_sqft < 100) ra.total_area_sqft = 1650;
+        }
         setQuote(quoteData);
         setMaterialType(quoteData.material_type || "architectural_shingle");
         const savedSections = quoteData.roof_analysis?.roof_sections;
