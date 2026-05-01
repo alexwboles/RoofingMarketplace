@@ -1,0 +1,235 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "lead_id": {
+      "type": "string"
+    },
+    "quote_id": {
+      "type": "string"
+    },
+    "roofer_id": {
+      "type": "string"
+    },
+    "homeowner_name": {
+      "type": "string"
+    },
+    "homeowner_email": {
+      "type": "string"
+    },
+    "homeowner_phone": {
+      "type": "string"
+    },
+    "roofer_company": {
+      "type": "string"
+    },
+    "roofer_name": {
+      "type": "string"
+    },
+    "roofer_phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "material_type": {
+      "type": "string"
+    },
+    "roof_analysis": {
+      "type": "object",
+      "description": "Detailed roof analysis data including measurements, obstacles, complexity, etc."
+    },
+    "materials_list": {
+      "type": "array",
+      "description": "List of materials needed for the project",
+      "items": {
+        "type": "object"
+      }
+    },
+    "contract_amount": {
+      "type": "number"
+    },
+    "amount_paid": {
+      "type": "number",
+      "default": 0
+    },
+    "contract": {
+      "type": "object",
+      "description": "Project contract with text and signature status",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "generated_date": {
+          "type": "string"
+        },
+        "roofer_signed": {
+          "type": "boolean",
+          "default": false
+        },
+        "homeowner_signed": {
+          "type": "boolean",
+          "default": false
+        },
+        "roofer_signed_date": {
+          "type": "string"
+        },
+        "homeowner_signed_date": {
+          "type": "string"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "materials_ordered",
+        "in_progress",
+        "inspection",
+        "completed",
+        "warranty"
+      ],
+      "default": "scheduled"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "estimated_completion": {
+      "type": "string",
+      "format": "date"
+    },
+    "actual_completion": {
+      "type": "string",
+      "format": "date"
+    },
+    "before_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs of before photos"
+    },
+    "after_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs of after photos"
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "complete"
+            ]
+          },
+          "completed_date": {
+            "type": "string"
+          },
+          "payment_amount": {
+            "type": "number"
+          },
+          "payment_status": {
+            "type": "string",
+            "enum": [
+              "unpaid",
+              "paid"
+            ],
+            "default": "unpaid"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Progress photo URLs for this milestone"
+          }
+        }
+      }
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sender": {
+            "type": "string"
+          },
+          "sender_role": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "uploaded_at": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "payment_transactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "completed",
+              "refunded"
+            ]
+          },
+          "method": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "address"
+  ]
+}

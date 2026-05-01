@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
+import MilestonePhotoUpload from "@/components/project/MilestonePhotoUpload";
 
 const statusIcon = {
   complete: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
@@ -113,6 +114,11 @@ export default function MilestoneTracker({ milestones = [], isRoofer, onUpdateMi
 
   const handleDelete = (i) => {
     const updated = milestones.filter((_, idx) => idx !== i);
+    onMilestonesChange && onMilestonesChange(updated);
+  };
+
+  const handlePhotosUpdated = async (i, photos) => {
+    const updated = milestones.map((m, idx) => idx === i ? { ...m, photos } : m);
     onMilestonesChange && onMilestonesChange(updated);
   };
 
@@ -221,6 +227,33 @@ export default function MilestoneTracker({ milestones = [], isRoofer, onUpdateMi
                           Mark Complete
                         </Button>
                       )}
+                    </div>
+                  )}
+
+                  {/* Roofer milestone photo upload */}
+                  {isRoofer && (
+                    <MilestonePhotoUpload
+                      milestone={milestone}
+                      milestoneIndex={i}
+                      project={project}
+                      onPhotosUpdated={handlePhotosUpdated}
+                    />
+                  )}
+
+                  {/* Homeowner: show progress photos if any */}
+                  {!isRoofer && milestone.photos?.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-slate-200/70">
+                      <p className="text-xs font-semibold text-slate-500 mb-2 flex items-center gap-1.5">
+                        📸 Progress Photos ({milestone.photos.length})
+                      </p>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {milestone.photos.map((url, pi) => (
+                          <a key={pi} href={url} target="_blank" rel="noopener noreferrer"
+                            className="rounded-lg overflow-hidden aspect-video bg-slate-100 block hover:opacity-90 transition-opacity">
+                            <img src={url} alt={`Progress ${pi + 1}`} className="w-full h-full object-cover" />
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
 
