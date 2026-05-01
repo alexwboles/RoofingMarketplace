@@ -15,6 +15,7 @@ import MessageThread from "@/components/messaging/MessageThread";
 import ReviewForm from "@/components/project/ReviewForm";
 import MaterialSelector from "@/components/project/MaterialSelector";
 import PhotoGallery from "@/components/project/PhotoGallery";
+import MaterialsCalculator from "@/components/project/MaterialsCalculator";
 import RoofReport from "@/components/quote/RoofReport";
 import ProjectInvoice from "@/components/project/ProjectInvoice";
 import ProjectContract from "@/components/project/ProjectContract";
@@ -209,6 +210,7 @@ export default function ProjectView() {
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
             {!isRoofer && <TabsTrigger value="materials">🏠 Materials</TabsTrigger>}
+            <TabsTrigger value="materials_calc">📦 Materials</TabsTrigger>
             <TabsTrigger value="photos">📸 Photos</TabsTrigger>
             {(project.status === "completed" || project.status === "warranty") && (
               <TabsTrigger value="invoice">🧾 Invoice</TabsTrigger>
@@ -426,6 +428,10 @@ export default function ProjectView() {
               </Card>
             </TabsContent>
           )}
+
+          <TabsContent value="materials_calc">
+            <MaterialsCalculator project={project} />
+          </TabsContent>
 
           <TabsContent value="photos">
             <PhotoGallery
