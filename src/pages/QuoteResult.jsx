@@ -133,99 +133,72 @@ export default function QuoteResult() {
 
   const analyzeRoof = useCallback(async (quoteData, extraDetails = {}) => {
     const detailsContext = [
-      extraDetails.home_sqft ? `Living area square footage: ${extraDetails.home_sqft} sq ft` : "",
+      extraDetails.home_sqft ? `Living area: ${extraDetails.home_sqft} sq ft` : "",
       extraDetails.roof_age ? `Roof age: ${extraDetails.roof_age.replace(/_/g, " ")}` : "",
-      extraDetails.concerns ? `Known issues/concerns: ${extraDetails.concerns}` : "",
-      extraDetails.upgrades ? `Desired upgrades/add-ons: ${extraDetails.upgrades}` : "",
-    ].filter(Boolean).join("\n");
+      extraDetails.concerns ? `Concerns: ${extraDetails.concerns}` : "",
+      extraDetails.upgrades ? `Upgrades: ${extraDetails.upgrades}` : "",
+    ].filter(Boolean).join(". ");
 
-    // Fetch 3 zoom levels (z19, z20, z21) in parallel for multi-perspective analysis
+    // Fetch satellite images
     let satelliteFileUrls = [];
     try {
       const res = await base44.functions.invoke("fetchSatelliteImage", { address: quoteData.address });
       const data = res.data || {};
-      // Prefer the multi-zoom array; fall back to single url
       satelliteFileUrls = data.file_urls?.length ? data.file_urls : (data.file_url ? [data.file_url] : []);
     } catch (e) {
       console.warn("Satellite fetch failed, proceeding without image", e.message);
     }
 
+    // STEP 1: Visual description of THIS specific roof (forces the model to actually look at the image)
+    let roofDescription = "";
+    if (satelliteFileUrls.length) {
+      const descResult = await base44.integrations.Core.InvokeLLM({
+        model: "claude_sonnet_4_6",
+        file_urls: satelliteFileUrls,
+        prompt: `You are looking at satellite images of the property at: "${quoteData.address}".
+${detailsContext ? `Homeowner details: ${detailsContext}` : ""}
+
+Three images are provided: wide view (z19), standard view (z20), close-up (z21).
+
+Describe EXACTLY what you see for THIS specific roof:
+1. Overall shape: Is it a gable, hip, L-shape, T-shape, or complex multi-section roof? Describe the outline.
+2. Roof sections: List each distinct sloped plane you can see, its approximate size relative to the total, and its orientation (north/south/east/west facing).
+3. Size estimate: How wide and deep does the building footprint appear? Estimate in feet.
+4. Pitch: Are the shadows at the eaves shallow (low pitch) or deep/dramatic (steep pitch)?
+5. Obstacles: List any chimneys, skylights, vents, dormers, or HVAC units you can see.
+6. Stories: Does the building appear to be 1 or 2 stories based on shadow height?
+7. Current material: What roofing material is visible (shingles, tile, metal, etc.)?
+
+Be specific to THIS property. Do not give generic answers.`,
+      });
+      roofDescription = typeof descResult === "string" ? descResult : JSON.stringify(descResult);
+    }
+
+    // STEP 2: Convert the visual description into structured measurements
     const analysis = await base44.integrations.Core.InvokeLLM({
-      model: "claude_opus_4_6",
-      ...(satelliteFileUrls.length ? { file_urls: satelliteFileUrls } : { add_context_from_internet: false }),
-      prompt: `You are a certified roof measurement specialist with 20+ years of experience. You are analyzing ${satelliteFileUrls.length > 1 ? "THREE Google Maps satellite images at zoom levels 19, 20, and 21" : "a Google Maps satellite image"} of the property at: "${quoteData.address}".
-${detailsContext ? `\nHomeowner-provided details:\n${detailsContext}` : ""}
+      model: "claude_sonnet_4_6",
+      ...(satelliteFileUrls.length ? { file_urls: satelliteFileUrls } : {}),
+      prompt: `You are a roofing measurement expert. Based on the satellite images of "${quoteData.address}" and the visual description below, produce accurate structured measurements.
+${detailsContext ? `Homeowner details: ${detailsContext}` : ""}
 
-${satelliteFileUrls.length > 1 ? `IMAGE GUIDE:
-- Image 1 (z19): Wide neighborhood view — use to understand lot size, property boundaries, and building footprint relative to surroundings.
-- Image 2 (z20): Standard roof view — primary measurement image. At z20, 1 pixel ≈ 0.149 m ≈ 0.489 ft (mid-US; ±10% for latitude).
-- Image 3 (z21): Close-up detail view — use to identify roof materials, obstacles, fine features, and shadow/pitch details.
-Cross-reference all three images for the most accurate measurements.` : `IMAGE GUIDE: At zoom 20, 1 pixel ≈ 0.149 m ≈ 0.489 ft (mid-US; ±10% for latitude).`}
+VISUAL DESCRIPTION OF THIS ROOF:
+${roofDescription || "No image available — use address context and typical regional home sizes to estimate."}
 
-═══ MEASUREMENT PROTOCOL ═══
+Convert the visual description into precise measurements:
+- Estimate the roof footprint from the described building width × depth
+- Apply pitch multiplier: 2/12=1.02, 4/12=1.06, 6/12=1.12, 8/12=1.20, 10/12=1.30, 12/12=1.41
+- waste_factor: simple=1.05, moderate=1.08, complex=1.12
+- total_area_sqft = footprint × pitch_multiplier × waste_factor
+- List each roof section with its name and estimated area_sqft (sections should sum to ~footprint)
+- difficulty_score: base on number of facets (each adds 1), pitch >8/12 (+2), obstacles (+1 each), stories >1 (+1)
 
-STEP 1 — PROPERTY BOUNDARY & ROOF FOOTPRINT:
-Using the wide view (z19), identify the full property. On z20, precisely trace the roof boundary.
-- Count pixel width and depth of the roof footprint
-- footprint_width_ft = pixel_width × 0.489
-- footprint_depth_ft = pixel_depth × 0.489
-- roof_footprint_sqft = footprint_width_ft × footprint_depth_ft
-- Typical single-family home: 1,000–2,800 sq ft footprint; 2-story: divide by 2 per floor
-
-STEP 2 — ROOF PLANES (FACETS):
-Identify EVERY distinct sloped surface. Common configurations:
-- Gable: 2 planes (front + back)
-- Hip: 4 planes (front, back, left end, right end)
-- Complex: 6–12+ planes (dormers, L-shapes, garage additions)
-For each facet: measure projected pixel area → convert to sq ft. Record name, orientation, and area.
-CRITICAL: Sum of all facet projected areas must equal the footprint (within 5%). Recheck if off.
-
-STEP 3 — PITCH ANALYSIS (use z21 for shadow detail):
-Examine shadow patterns at roof edges and valleys:
-- Flat/low: No visible shadow beneath eave → 2/12–3/12 (multiplier 1.01–1.03)
-- Moderate: Slight shadow band → 4/12–5/12 (multiplier 1.06–1.08)
-- Standard: Clear shadow transition, ~1/3 eave width → 6/12–7/12 (multiplier 1.12–1.16)
-- Steep: Deep shadow > half eave width → 8/12–9/12 (multiplier 1.20–1.25)
-- Very steep: Dramatic dark shadows equal to eave → 10/12–12/12+ (multiplier 1.30–1.41)
-Each facet may have a different pitch; use the dominant pitch for the overall value.
-
-STEP 4 — OBSTACLES & PENETRATIONS (use z21 close-up):
-Scan meticulously for: chimneys (rectangular dark mass), skylights (rectangular lighter panels), plumbing vents (small circular dots), HVAC units (rectangular boxes, often on flat sections), solar panels (dark rectangular arrays), ridge vents (thin lines along ridge), dormers (vertical protrusions with their own small roof), satellite dishes (circular).
-For each obstacle: type, count, estimated size_sqft, and whether it affects usable roof area.
-
-STEP 5 — LINEAR FEATURES (measure in pixels, convert to feet):
-- Ridge length: Measure the highest horizontal line(s) of the roof
-- Hip length: Measure diagonal corner lines descending from ridge
-- Valley length: Measure inward-diagonal lines where planes meet
-- Eave/drip-edge length: Perimeter of roof at lowest edges (typically = footprint perimeter)
-- Rake length: Gable end sloped edges
-
-STEP 6 — BUILDING STORIES:
-Use z19 to assess building height relative to neighbors and shadow height. Single-story = one roofline, two-story = taller shadow profile. Note: does NOT change roof area, but affects difficulty.
-
-STEP 7 — FINAL CALCULATIONS:
-obstacle_area_sqft = sum of all obstacle size_sqft
-net_footprint_sqft = roof_footprint_sqft - obstacle_area_sqft
-pitch_multiplier = (lookup from step 3)
-waste_factor: simple hip/gable = 1.05, moderate (1–2 dormers or L-shape) = 1.08, complex (many valleys, dormers, steep) = 1.10–1.12
-total_area_sqft = net_footprint_sqft × pitch_multiplier × waste_factor
-
-STEP 8 — SELF-VALIDATION (CRITICAL):
-Before returning, check:
-✓ total_area_sqft is between 800 and 6,000 sq ft (flag if outside range)
-✓ Sum of roof_sections area_sqft ≈ roof_footprint_sqft (within 5%)
-✓ ridge_length_ft < footprint_width_ft (ridge can't be longer than the building)
-✓ eave_length_ft ≈ 2 × (footprint_width_ft + footprint_depth_ft) (perimeter check)
-✓ difficulty_score is consistent with num_facets, pitch, and obstacles
-✓ measurement_confidence reflects actual image clarity: "high" only if the roof is clearly visible with no obstructions from trees/shadows
-
-ABSOLUTE RULES:
-- ALWAYS return a number for total_area_sqft (never null, never 0)
-- ALWAYS return pitch in "X/12" format (e.g. "6/12")
-- ALWAYS return complexity as exactly "simple", "moderate", or "complex"
-- ALWAYS return difficulty_score as integer 1–10
-- NEVER leave any field null — use your best professional estimate
-- If image quality is poor, note it in measurement_confidence and use conservative estimates`,
+Rules:
+- total_area_sqft must be between 800–6000
+- pitch must be "X/12" format
+- complexity must be "simple", "moderate", or "complex"
+- difficulty_score must be 1–10 integer
+- roof_sections must reflect the actual shape described above
+- NEVER leave any required field null`,
       response_json_schema: {
         type: "object",
         properties: {
